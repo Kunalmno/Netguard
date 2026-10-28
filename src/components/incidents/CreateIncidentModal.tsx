@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Select } from '../ui/select.tsx';
+import { Textarea } from '../ui/textarea.tsx';
+import { Modal } from '../ui/modal.tsx';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { Button } from '../ui/button.tsx';
 import { Input } from '../ui/input.tsx';
@@ -106,8 +109,7 @@ export const CreateIncidentModal: React.FC<CreateIncidentModalProps> = ({ isOpen
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl text-zinc-100 max-h-[90vh] overflow-y-auto">
+    <Modal onClose={onClose} label={"Declare incident"} widthClass="max-w-xl">
         {/* Header */}
         <div className="flex items-start justify-between pb-3 border-b border-zinc-800">
           <div>
@@ -119,7 +121,7 @@ export const CreateIncidentModal: React.FC<CreateIncidentModalProps> = ({ isOpen
               Establish a coordinated operational incident case for investigation & containment.
             </p>
           </div>
-          <Button
+          <Button aria-label="Close"
             variant="ghost"
             size="icon"
             onClick={onClose}
@@ -138,8 +140,8 @@ export const CreateIncidentModal: React.FC<CreateIncidentModalProps> = ({ isOpen
           )}
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-mono text-zinc-300">Incident Title*</label>
-            <Input
+            <label htmlFor="createincidentmodal-f1" className="text-xs font-mono text-zinc-300">Incident Title*</label>
+            <Input id="createincidentmodal-f1"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. INC-204: Multiple SQL Injection Attempts on Production DB"
@@ -150,25 +152,25 @@ export const CreateIncidentModal: React.FC<CreateIncidentModalProps> = ({ isOpen
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-mono text-zinc-300">Severity Level*</label>
-              <select
+              <label htmlFor="createincidentmodal-f2" className="text-xs font-mono text-zinc-300">Severity Level*</label>
+              <Select id="createincidentmodal-f2"
                 value={severity}
                 onChange={(e) => setSeverity(e.target.value as IncidentSeverity)}
-                className="w-full h-9 rounded-md border border-zinc-700 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-100 font-mono focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                className="w-full"
               >
                 <option value="SEV1">SEV1 - Critical (Immediate Threat/Exploit)</option>
                 <option value="SEV2">SEV2 - High (Active Probe/Unauthorized Action)</option>
                 <option value="SEV3">SEV3 - Medium (Suspicious Pattern)</option>
                 <option value="SEV4">SEV4 - Low (Policy Violation/Triage)</option>
-              </select>
+              </Select>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[11px] font-mono text-zinc-300">Assign Lead Investigator</label>
-              <select
+              <label htmlFor="createincidentmodal-f3" className="text-xs font-mono text-zinc-300">Assign Lead Investigator</label>
+              <Select id="createincidentmodal-f3"
                 value={assignedTo}
                 onChange={(e) => setAssignedTo(e.target.value)}
-                className="w-full h-9 rounded-md border border-zinc-700 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-100 font-mono focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                className="w-full"
               >
                 <option value="">Unassigned (Awaiting Triage)</option>
                 {assignableUsers.map((u) => (
@@ -176,26 +178,26 @@ export const CreateIncidentModal: React.FC<CreateIncidentModalProps> = ({ isOpen
                     {u.email} ({u.role})
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-mono text-zinc-300">Scope & Initial Assessment*</label>
-            <textarea
+            <label htmlFor="createincidentmodal-f4" className="text-xs font-mono text-zinc-300">Scope & Initial Assessment*</label>
+            <Textarea id="createincidentmodal-f4"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               placeholder="Detail the observed attack surface, affected hosts, and immediate risk..."
               required
-              className="w-full rounded-md border border-zinc-700 bg-zinc-900/60 p-2.5 text-xs text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+              className="w-full"
             />
           </div>
 
           {/* Alert Association Picker */}
           {availableAlerts.length > 0 && (
             <div className="space-y-2 pt-1 border-t border-zinc-800">
-              <label className="text-[11px] font-mono text-zinc-400 block">
+              <label className="text-xs font-mono text-zinc-400 block">
                 Attach Correlated Alerts ({selectedAlertIds.length} selected)
               </label>
               <div className="max-h-36 overflow-y-auto space-y-1 rounded border border-zinc-800 bg-zinc-900/30 p-2">
@@ -205,7 +207,7 @@ export const CreateIncidentModal: React.FC<CreateIncidentModalProps> = ({ isOpen
                     <div
                       key={al.id}
                       onClick={() => handleToggleAlert(al.id)}
-                      className={`p-2 rounded flex items-center justify-between text-[11px] font-mono cursor-pointer transition-colors ${
+                      className={`p-2 rounded flex items-center justify-between text-xs font-mono cursor-pointer transition-colors ${
                         isChecked ? 'bg-zinc-800/90 text-zinc-100 border border-zinc-700' : 'hover:bg-zinc-900/60 text-zinc-400'
                       }`}
                     >
@@ -219,7 +221,7 @@ export const CreateIncidentModal: React.FC<CreateIncidentModalProps> = ({ isOpen
                         <span className="font-semibold text-zinc-300">#{al.id}</span>
                         <span className="truncate">{al.title}</span>
                       </div>
-                      <span className="text-[10px] text-zinc-500 shrink-0 ml-2">
+                      <span className="text-xs text-zinc-500 shrink-0 ml-2">
                         {al.severity} &bull; {al.sourceIp}
                       </span>
                     </div>
@@ -239,7 +241,6 @@ export const CreateIncidentModal: React.FC<CreateIncidentModalProps> = ({ isOpen
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 };

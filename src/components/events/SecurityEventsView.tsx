@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Select } from '../ui/select.tsx';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card.tsx';
 import { Badge } from '../ui/badge.tsx';
@@ -165,38 +166,38 @@ export const SecurityEventsView: React.FC = () => {
 
             {/* Priority Selector */}
             <div>
-              <select
+              <Select
                 value={priorityFilter}
                 onChange={(e) => {
                   setPriorityFilter(e.target.value);
                   setPage(1);
                 }}
-                className="w-full h-9 rounded-md border border-zinc-700 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-200 font-mono focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                className="w-full"
               >
                 <option value="">All Severities</option>
                 <option value="1">Priority 1 (High)</option>
                 <option value="2">Priority 2 (Medium)</option>
                 <option value="3">Priority 3 (Low)</option>
                 <option value="4">Priority 4 (Info)</option>
-              </select>
+              </Select>
             </div>
 
             {/* Protocol Selector */}
             <div>
-              <select
+              <Select
                 value={protocolFilter}
                 onChange={(e) => {
                   setProtocolFilter(e.target.value);
                   setPage(1);
                 }}
-                className="w-full h-9 rounded-md border border-zinc-700 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-200 font-mono focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                className="w-full"
               >
                 <option value="">All Protocols</option>
                 <option value="TCP">TCP</option>
                 <option value="UDP">UDP</option>
                 <option value="ICMP">ICMP</option>
                 <option value="IP">IP</option>
-              </select>
+              </Select>
             </div>
 
             {/* Reset */}
@@ -227,17 +228,17 @@ export const SecurityEventsView: React.FC = () => {
       {/* Events Table */}
       <Card>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          <div className="overflow-auto max-h-[70vh]">
             <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-zinc-800 bg-zinc-900/60 text-zinc-400 font-mono text-[11px] uppercase tracking-wider">
-                  <th className="py-3 px-4">Severity</th>
-                  <th className="py-3 px-3">SID</th>
-                  <th className="py-3 px-4">Signature Message</th>
-                  <th className="py-3 px-3">Proto</th>
-                  <th className="py-3 px-4">Traffic Vector (Src &rarr; Dst)</th>
-                  <th className="py-3 px-4">Timestamp (UTC)</th>
-                  <th className="py-3 px-3 text-right">Action</th>
+              <thead className="sticky top-0 z-10 bg-zinc-900">
+                <tr className="border-b-2 border-zinc-800 bg-zinc-900 text-zinc-400 font-mono text-xs uppercase tracking-wider">
+                  <th scope="col" className="py-3 px-4">Severity</th>
+                  <th scope="col" className="py-3 px-3">SID</th>
+                  <th scope="col" className="py-3 px-4">Signature Message</th>
+                  <th scope="col" className="py-3 px-3">Proto</th>
+                  <th scope="col" className="py-3 px-4">Traffic Vector (Src &rarr; Dst)</th>
+                  <th scope="col" className="py-3 px-4">Timestamp (UTC)</th>
+                  <th scope="col" className="py-3 px-3 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/80">
@@ -278,7 +279,7 @@ export const SecurityEventsView: React.FC = () => {
                           {ev.signatureMessage}
                         </div>
                         {ev.classification && (
-                          <div className="text-[11px] text-zinc-500 truncate">
+                          <div className="text-xs text-zinc-500 truncate">
                             {ev.classification}
                           </div>
                         )}
@@ -286,7 +287,7 @@ export const SecurityEventsView: React.FC = () => {
                       <td className="py-2.5 px-3 font-mono text-sky-400 font-semibold whitespace-nowrap">
                         {ev.protocol}
                       </td>
-                      <td className="py-2.5 px-4 font-mono text-[11px] text-zinc-400 whitespace-nowrap">
+                      <td className="py-2.5 px-4 font-mono text-xs text-zinc-400 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <span className="text-zinc-300">
                             {ev.sourceIp}{ev.sourcePort !== null ? `:${ev.sourcePort}` : ''}
@@ -297,7 +298,7 @@ export const SecurityEventsView: React.FC = () => {
                           </span>
                         </div>
                       </td>
-                      <td className="py-2.5 px-4 font-mono text-[11px] text-zinc-500 whitespace-nowrap">
+                      <td className="py-2.5 px-4 font-mono text-xs text-zinc-500 whitespace-nowrap">
                         {new Date(ev.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}{' '}
                         <span className="text-zinc-600">{new Date(ev.timestamp).toISOString().split('T')[0]}</span>
                       </td>
@@ -328,18 +329,18 @@ export const SecurityEventsView: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <select
+              <Select
                 value={limit}
                 onChange={(e) => {
                   setLimit(Number(e.target.value));
                   setPage(1);
                 }}
-                className="h-8 rounded border border-zinc-800 bg-zinc-900 px-2 text-xs font-mono text-zinc-300 focus:outline-none"
+                
               >
                 <option value="10">10 / page</option>
                 <option value="20">20 / page</option>
                 <option value="50">50 / page</option>
-              </select>
+              </Select>
 
               <div className="flex items-center space-x-1">
                 <Button

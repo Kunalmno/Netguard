@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Select } from '../ui/select.tsx';
+import { Modal } from '../ui/modal.tsx';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card.tsx';
 import { Badge } from '../ui/badge.tsx';
@@ -217,17 +219,17 @@ export const UserAdminView: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          <div className="overflow-auto max-h-[70vh]">
             <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-zinc-800 bg-zinc-900/60 text-zinc-400 font-mono text-[11px] uppercase tracking-wider">
-                  <th className="py-3 px-4">Operator ID</th>
-                  <th className="py-3 px-4">Email Address</th>
-                  <th className="py-3 px-3">Role</th>
-                  <th className="py-3 px-3">Status</th>
-                  <th className="py-3 px-4">Registered Date</th>
-                  <th className="py-3 px-4 text-right">Role Controls</th>
-                  <th className="py-3 px-4 text-right">Account Status</th>
+              <thead className="sticky top-0 z-10 bg-zinc-900">
+                <tr className="border-b-2 border-zinc-800 bg-zinc-900 text-zinc-400 font-mono text-xs uppercase tracking-wider">
+                  <th scope="col" className="py-3 px-4">Operator ID</th>
+                  <th scope="col" className="py-3 px-4">Email Address</th>
+                  <th scope="col" className="py-3 px-3">Role</th>
+                  <th scope="col" className="py-3 px-3">Status</th>
+                  <th scope="col" className="py-3 px-4">Registered Date</th>
+                  <th scope="col" className="py-3 px-4 text-right">Role Controls</th>
+                  <th scope="col" className="py-3 px-4 text-right">Account Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/80">
@@ -256,7 +258,7 @@ export const UserAdminView: React.FC = () => {
                             {u.email}
                           </div>
                           {isSelf && (
-                            <span className="text-[10px] text-zinc-500 uppercase font-mono">
+                            <span className="text-xs text-zinc-500 uppercase font-mono">
                               (Current Session)
                             </span>
                           )}
@@ -273,19 +275,19 @@ export const UserAdminView: React.FC = () => {
                             <Badge variant="destructive">DEACTIVATED</Badge>
                           )}
                         </td>
-                        <td className="py-3 px-4 font-mono text-[11px] text-zinc-500 whitespace-nowrap">
+                        <td className="py-3 px-4 font-mono text-xs text-zinc-500 whitespace-nowrap">
                           {new Date(u.createdAt).toISOString().split('T')[0]}
                         </td>
                         <td className="py-3 px-4 text-right whitespace-nowrap">
-                          <select
+                          <Select
                             value={u.role}
                             onChange={(e) => handleRoleChange(u.id, e.target.value as UserRole)}
-                            className="h-8 rounded border border-zinc-700 bg-zinc-900 px-2 text-xs font-mono text-zinc-200 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                            
                           >
                             <option value="ADMIN">ADMIN</option>
                             <option value="ANALYST">ANALYST</option>
                             <option value="VIEWER">VIEWER</option>
-                          </select>
+                          </Select>
                         </td>
                         <td className="py-3 px-4 text-right whitespace-nowrap">
                           <Button
@@ -313,8 +315,7 @@ export const UserAdminView: React.FC = () => {
 
       {/* Add Operator Modal */}
       {isAddUserOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl text-zinc-100">
+        <Modal onClose={() => setIsAddUserOpen(false)} label="Onboard new operator" widthClass="max-w-md">
             <div className="flex items-start justify-between pb-3 border-b border-zinc-800">
               <div>
                 <h2 className="text-base font-bold text-zinc-100 flex items-center gap-2">
@@ -325,7 +326,7 @@ export const UserAdminView: React.FC = () => {
                   Create a new operator account. Roles can be adjusted subsequently.
                 </p>
               </div>
-              <Button
+              <Button aria-label="Close"
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsAddUserOpen(false)}
@@ -344,8 +345,8 @@ export const UserAdminView: React.FC = () => {
               )}
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono text-zinc-400">Operator Email*</label>
-                <Input
+                <label htmlFor="useradminview-f1" className="text-xs font-mono text-zinc-400">Operator Email*</label>
+                <Input id="useradminview-f1"
                   type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
@@ -356,8 +357,8 @@ export const UserAdminView: React.FC = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono text-zinc-400">Temporary Password*</label>
-                <Input
+                <label htmlFor="useradminview-f2" className="text-xs font-mono text-zinc-400">Temporary Password*</label>
+                <Input id="useradminview-f2"
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
@@ -365,7 +366,7 @@ export const UserAdminView: React.FC = () => {
                   required
                   className="text-xs"
                 />
-                <p className="text-[11px] text-zinc-500">Minimum 8 characters</p>
+                <p className="text-xs text-zinc-500">Minimum 8 characters</p>
               </div>
 
               <div className="pt-3 border-t border-zinc-800 flex justify-end gap-2">
@@ -388,8 +389,7 @@ export const UserAdminView: React.FC = () => {
                 </Button>
               </div>
             </form>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

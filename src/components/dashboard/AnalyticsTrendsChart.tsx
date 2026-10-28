@@ -20,13 +20,14 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
   type,
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const uid = React.useId().replace(/:/g, '');
 
   if (!buckets || buckets.length === 0) {
     return (
-      <Card className="bg-zinc-900/30 border-zinc-800">
+      <Card className="bg-zinc-900 border-zinc-800">
         <CardHeader className="p-4 pb-2 border-b border-zinc-800">
           <CardTitle className="text-sm font-semibold text-zinc-100">{title}</CardTitle>
-          <CardDescription className="text-[11px] text-zinc-400">{description}</CardDescription>
+          <CardDescription className="text-xs text-zinc-400">{description}</CardDescription>
         </CardHeader>
         <CardContent className="p-6 text-center text-xs text-zinc-500 font-mono">
           No trend data recorded for this window.
@@ -62,34 +63,47 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
   const innerHeight = chartHeight - paddingTop - paddingBottom;
   const barWidth = Math.max(4, (innerWidth / buckets.length) * 0.7);
 
+  const bucketLabel = (b: TrendBucket) =>
+    type === 'alerts'
+      ? `${formatTimestamp(b.timestamp)}: ${b.alertsTotal} alerts, ${b.alertsCritical} critical, ${b.alertsHigh} high`
+      : `${formatTimestamp(b.timestamp)}: ${b.incidentsDeclared} incidents declared, ${b.incidentsResolved} resolved`;
+
+  const totalAlerts = buckets.reduce((n, b) => n + b.alertsTotal, 0);
+  const totalDeclared = buckets.reduce((n, b) => n + b.incidentsDeclared, 0);
+  const totalResolved = buckets.reduce((n, b) => n + b.incidentsResolved, 0);
+  const summaryText =
+    type === 'alerts'
+      ? `${title}. ${totalAlerts} alerts over ${timeRange} in ${buckets.length} intervals.`
+      : `${title}. ${totalDeclared} incidents declared and ${totalResolved} resolved over ${timeRange}.`;
+
   const hoveredBucket = hoveredIndex !== null ? buckets[hoveredIndex] : null;
 
   return (
-    <Card className="bg-zinc-900/30 border-zinc-800 relative">
+    <Card className="bg-zinc-900 border-zinc-800 relative">
       <CardHeader className="p-4 pb-2 border-b border-zinc-800 flex flex-row items-center justify-between">
         <div>
           <CardTitle className="text-sm font-semibold text-zinc-100">{title}</CardTitle>
-          <CardDescription className="text-[11px] text-zinc-400">{description}</CardDescription>
+          <CardDescription className="text-xs text-zinc-400">{description}</CardDescription>
         </div>
         {type === 'alerts' ? (
-          <div className="flex items-center gap-2 text-[10px] font-mono">
+          <div className="flex items-center gap-2 text-xs font-mono">
             <span className="flex items-center gap-1 text-red-400">
-              <span className="h-2 w-2 rounded-full bg-red-500" /> Critical
+              <span aria-hidden="true" className="h-2.5 w-2.5 bg-red-400" /> Critical (solid)
             </span>
             <span className="flex items-center gap-1 text-amber-400">
-              <span className="h-2 w-2 rounded-full bg-amber-500" /> High
+              <span aria-hidden="true" className="h-2.5 w-2.5 border border-amber-400 bg-[repeating-linear-gradient(45deg,var(--c-high)_0_2px,transparent_2px_5px)]" /> High (hatched)
             </span>
             <span className="flex items-center gap-1 text-sky-400">
-              <span className="h-2 w-2 rounded-full bg-sky-500" /> Med/Low
+              <span aria-hidden="true" className="h-2.5 w-2.5 border-2 border-sky-400" /> Med/Low (outline)
             </span>
           </div>
         ) : (
-          <div className="flex items-center gap-2 text-[10px] font-mono">
+          <div className="flex items-center gap-2 text-xs font-mono">
             <span className="flex items-center gap-1 text-red-400">
-              <span className="h-2 w-2 rounded-full bg-red-500" /> Declared
+              <span aria-hidden="true" className="h-2.5 w-2.5 bg-red-400" /> Declared (solid)
             </span>
             <span className="flex items-center gap-1 text-emerald-400">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" /> Resolved
+              <span aria-hidden="true" className="h-2.5 w-2.5 border border-emerald-400 bg-[repeating-linear-gradient(45deg,var(--c-ok)_0_2px,transparent_2px_5px)]" /> Resolved (hatched)
             </span>
           </div>
         )}
@@ -97,11 +111,24 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
 
       <CardContent className="p-3 pt-4">
         {/* SVG Histogram */}
-        <div className="w-full overflow-hidden">
+        <figure className="w-full overflow-x-auto m-0">
+          <figcaption className="sr-only">{summaryText}</figcaption>
           <svg
             viewBox={`0 0 ${totalWidth} ${chartHeight}`}
-            className="w-full h-36 overflow-visible select-none"
+            role="group"
+            aria-label={summaryText}
+            className="w-full min-w-[480px] h-36 overflow-visible select-none"
           >
+            <defs>
+              <pattern id={`${uid}-high`} width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <rect width="5" height="5" fill="var(--c-high-bg)" />
+                <line x1="0" y1="0" x2="0" y2="5" stroke="var(--c-high)" strokeWidth="2.5" />
+              </pattern>
+              <pattern id={`${uid}-ok`} width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <rect width="5" height="5" fill="var(--c-ok-bg)" />
+                <line x1="0" y1="0" x2="0" y2="5" stroke="var(--c-ok)" strokeWidth="2.5" />
+              </pattern>
+            </defs>
             {/* Horizontal Grid lines */}
             {[0, 0.5, 1].map((ratio) => {
               const y = paddingTop + innerHeight * (1 - ratio);
@@ -113,7 +140,7 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
                     y1={y}
                     x2={totalWidth - paddingRight}
                     y2={y}
-                    stroke="#27272a"
+                    stroke="var(--c-border)"
                     strokeDasharray={ratio > 0 ? '3 3' : 'none'}
                     strokeWidth="1"
                   />
@@ -121,8 +148,8 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
                     x={paddingLeft - 6}
                     y={y + 3}
                     textAnchor="end"
-                    fill="#71717a"
-                    className="text-[9px] font-mono"
+                    fill="var(--c-text-3)"
+                    className="text-xs font-mono"
                   >
                     {labelVal}
                   </text>
@@ -153,6 +180,11 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
                     key={b.timestamp}
                     onMouseEnter={() => setHoveredIndex(i)}
                     onMouseLeave={() => setHoveredIndex(null)}
+                    onFocus={() => setHoveredIndex(i)}
+                    onBlur={() => setHoveredIndex(null)}
+                    tabIndex={0}
+                    role="img"
+                    aria-label={bucketLabel(b)}
                     className="cursor-pointer transition-opacity"
                     opacity={hoveredIndex === null || isHovered ? 1 : 0.4}
                   >
@@ -166,7 +198,7 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
                     />
 
                     {b.alertsTotal === 0 ? (
-                      <circle cx={xCenter} cy={yBase - 1} r="1" fill="#3f3f46" />
+                      <circle cx={xCenter} cy={yBase - 1} r="1" fill="var(--c-border-strong)" />
                     ) : (
                       <>
                         {critH > 0 && (
@@ -175,7 +207,7 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
                             y={yCrit}
                             width={barWidth}
                             height={critH}
-                            fill="#ef4444"
+                            fill="var(--c-crit)"
                             rx="1"
                           />
                         )}
@@ -185,7 +217,7 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
                             y={yHigh}
                             width={barWidth}
                             height={highH}
-                            fill="#f59e0b"
+                            fill={`url(#${uid}-high)`} stroke="var(--c-high)" strokeWidth="1"
                             rx="1"
                           />
                         )}
@@ -195,7 +227,7 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
                             y={yOther}
                             width={barWidth}
                             height={otherH}
-                            fill="#38bdf8"
+                            fill="var(--c-low-bg)" stroke="var(--c-low)" strokeWidth="1.5"
                             rx="1"
                           />
                         )}
@@ -208,8 +240,8 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
                         x={xCenter}
                         y={chartHeight - 6}
                         textAnchor="middle"
-                        fill="#71717a"
-                        className="text-[9px] font-mono"
+                        fill="var(--c-text-3)"
+                        className="text-xs font-mono"
                       >
                         {formatTimestamp(b.timestamp)}
                       </text>
@@ -230,6 +262,11 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
                     key={b.timestamp}
                     onMouseEnter={() => setHoveredIndex(i)}
                     onMouseLeave={() => setHoveredIndex(null)}
+                    onFocus={() => setHoveredIndex(i)}
+                    onBlur={() => setHoveredIndex(null)}
+                    tabIndex={0}
+                    role="img"
+                    aria-label={bucketLabel(b)}
                     className="cursor-pointer transition-opacity"
                     opacity={hoveredIndex === null || isHovered ? 1 : 0.4}
                   >
@@ -248,11 +285,11 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
                         y={yBase - decH}
                         width={halfW}
                         height={decH}
-                        fill="#ef4444"
+                        fill="var(--c-crit)"
                         rx="1"
                       />
                     ) : (
-                      <circle cx={xCenter - halfW / 2} cy={yBase - 1} r="1" fill="#3f3f46" />
+                      <circle cx={xCenter - halfW / 2} cy={yBase - 1} r="1" fill="var(--c-border-strong)" />
                     )}
 
                     {/* Resolved Bar */}
@@ -262,11 +299,11 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
                         y={yBase - resH}
                         width={halfW}
                         height={resH}
-                        fill="#10b981"
+                        fill={`url(#${uid}-ok)`} stroke="var(--c-ok)" strokeWidth="1"
                         rx="1"
                       />
                     ) : (
-                      <circle cx={xCenter + halfW / 2} cy={yBase - 1} r="1" fill="#3f3f46" />
+                      <circle cx={xCenter + halfW / 2} cy={yBase - 1} r="1" fill="var(--c-border-strong)" />
                     )}
 
                     {/* X axis labels */}
@@ -275,8 +312,8 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
                         x={xCenter}
                         y={chartHeight - 6}
                         textAnchor="middle"
-                        fill="#71717a"
-                        className="text-[9px] font-mono"
+                        fill="var(--c-text-3)"
+                        className="text-xs font-mono"
                       >
                         {formatTimestamp(b.timestamp)}
                       </text>
@@ -286,10 +323,55 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
               }
             })}
           </svg>
-        </div>
+        </figure>
+
+        <details className="mt-2 text-xs text-zinc-400">
+          <summary className="cursor-pointer min-h-8 flex items-center">View chart data as table</summary>
+          <div className="max-h-48 overflow-auto mt-1">
+            <table className="w-full text-left font-mono">
+              <caption className="sr-only">{title}</caption>
+              <thead className="sticky top-0 bg-zinc-900">
+                <tr>
+                  <th scope="col" className="py-1 pr-3">Interval</th>
+                  {type === 'alerts' ? (
+                    <>
+                      <th scope="col" className="py-1 pr-3 text-right">Total</th>
+                      <th scope="col" className="py-1 pr-3 text-right">Critical</th>
+                      <th scope="col" className="py-1 text-right">High</th>
+                    </>
+                  ) : (
+                    <>
+                      <th scope="col" className="py-1 pr-3 text-right">Declared</th>
+                      <th scope="col" className="py-1 text-right">Resolved</th>
+                    </>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {buckets.map((b) => (
+                  <tr key={b.timestamp} className="border-t border-zinc-800">
+                    <th scope="row" className="py-1 pr-3 font-normal">{formatTimestamp(b.timestamp)}</th>
+                    {type === 'alerts' ? (
+                      <>
+                        <td className="py-1 pr-3 text-right">{b.alertsTotal}</td>
+                        <td className="py-1 pr-3 text-right">{b.alertsCritical}</td>
+                        <td className="py-1 text-right">{b.alertsHigh}</td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="py-1 pr-3 text-right">{b.incidentsDeclared}</td>
+                        <td className="py-1 text-right">{b.incidentsResolved}</td>
+                      </>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
 
         {/* Dynamic Hover Tooltip summary */}
-        <div className="h-6 flex items-center justify-between text-[11px] font-mono text-zinc-400 px-2 pt-1 border-t border-zinc-800/60">
+        <div className="h-6 flex items-center justify-between text-xs font-mono text-zinc-400 px-2 pt-1 border-t border-zinc-800/60">
           {hoveredBucket ? (
             <>
               <span className="text-zinc-300">
@@ -314,7 +396,7 @@ export const AnalyticsTrendsChart: React.FC<AnalyticsTrendsChartProps> = ({
               )}
             </>
           ) : (
-            <span className="text-zinc-500">Hover over bars to inspect discrete time intervals</span>
+            <span className="text-zinc-500">Hover or focus a bar to inspect each interval</span>
           )}
         </div>
       </CardContent>

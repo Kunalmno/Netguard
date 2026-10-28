@@ -207,7 +207,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ onNavigate }) => {
               {loading ? '...' : stats?.total ?? 0}
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0 text-[11px] text-zinc-500">
+          <CardContent className="p-4 pt-0 text-xs text-zinc-500">
             Validated Snort alert records
           </CardContent>
         </Card>
@@ -222,7 +222,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ onNavigate }) => {
               {loading ? '...' : stats?.byPriority?.high ?? 0}
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0 text-[11px] text-zinc-500">
+          <CardContent className="p-4 pt-0 text-xs text-zinc-500">
             Intrusion & exploit attempts
           </CardContent>
         </Card>
@@ -237,7 +237,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ onNavigate }) => {
               {loading ? '...' : stats?.byPriority?.medium ?? 0}
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0 text-[11px] text-zinc-500">
+          <CardContent className="p-4 pt-0 text-xs text-zinc-500">
             Suspicious scans & bad traffic
           </CardContent>
         </Card>
@@ -252,7 +252,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ onNavigate }) => {
               {user?.role}
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0 text-[11px] text-zinc-500">
+          <CardContent className="p-4 pt-0 text-xs text-zinc-500">
             {user?.email}
           </CardContent>
         </Card>
@@ -309,19 +309,19 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ onNavigate }) => {
                       <span className="text-xs font-mono font-medium text-zinc-200">
                         SID: {alert.signatureId}
                       </span>
-                      <span className="text-[11px] font-mono text-zinc-500">
+                      <span className="text-xs font-mono text-zinc-500">
                         {alert.protocol}
                       </span>
                     </div>
                     <p className="text-xs text-zinc-300 font-medium">
                       {alert.signatureMessage}
                     </p>
-                    <p className="text-[11px] text-zinc-500 font-mono">
+                    <p className="text-xs text-zinc-500 font-mono">
                       {alert.sourceIp}{alert.sourcePort ? `:${alert.sourcePort}` : ''} &rarr; {alert.destinationIp}{alert.destinationPort ? `:${alert.destinationPort}` : ''}
                     </p>
                   </div>
 
-                  <div className="text-right text-[11px] font-mono text-zinc-500 shrink-0">
+                  <div className="text-right text-xs font-mono text-zinc-500 shrink-0">
                     {new Date(alert.timestamp).toLocaleString()}
                   </div>
                 </div>

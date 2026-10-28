@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext.tsx';
 import { AuthView } from './components/auth/AuthView.tsx';
-import { Navbar } from './components/layout/Navbar.tsx';
+import { Navbar, type TabId } from './components/layout/Navbar.tsx';
 import { SocDashboardView } from './components/dashboard/SocDashboardView.tsx';
 import { SecurityEventsView } from './components/events/SecurityEventsView.tsx';
 import { AlertsView } from './components/alerts/AlertsView.tsx';
@@ -14,13 +14,13 @@ import { RealtimeProvider } from './context/RealtimeContext.tsx';
 
 function MainApp() {
   const { user, loading } = useAuth();
-  const [currentTab, setCurrentTab] = useState<'overview' | 'alerts' | 'incidents' | 'events' | 'admin' | 'docs'>('overview');
+  const [currentTab, setCurrentTab] = useState<TabId>('overview');
 
   if (loading) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-zinc-950 text-zinc-100 space-y-4">
-        <div className="h-10 w-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300 animate-pulse">
-          <Shield className="h-5 w-5" />
+      <div role="status" className="min-h-screen w-full flex flex-col items-center justify-center bg-zinc-950 text-zinc-100 space-y-4">
+        <div className="h-10 w-10 rounded-sm bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300 animate-pulse">
+          <Shield className="h-5 w-5" aria-hidden="true" />
         </div>
         <div className="text-xs font-mono text-zinc-500">Initializing NetGuard Security Console...</div>
       </div>
@@ -32,7 +32,7 @@ function MainApp() {
   }
 
   // Guard against non-admin manually selecting admin tab
-  const handleSelectTab = (tab: 'overview' | 'alerts' | 'incidents' | 'events' | 'admin' | 'docs') => {
+  const handleSelectTab = (tab: TabId) => {
     if (tab === 'admin' && user.role !== 'ADMIN') {
       setCurrentTab('overview');
       return;
@@ -42,9 +42,10 @@ function MainApp() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col selection:bg-zinc-800 selection:text-zinc-100">
+      <a href="#main" className="skip-link">Skip to main content</a>
       <Navbar currentTab={currentTab} onSelectTab={handleSelectTab} />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+      <main id="main" tabIndex={-1} className="flex-1 max-w-[1400px] w-full mx-auto p-4 sm:p-6 lg:p-8 outline-none">
         {currentTab === 'overview' && (
           <SocDashboardView onNavigate={handleSelectTab} />
         )}
@@ -70,7 +71,7 @@ function MainApp() {
         )}
       </main>
 
-      <footer className="border-t border-zinc-800/80 py-4 text-center text-xs text-zinc-500 font-mono">
+      <footer className="border-t border-zinc-800 py-4 text-center text-xs text-zinc-400 font-mono">
         NetGuard V2.2 &mdash; Realtime SOC Analytics, Alert Triage & Incident Response Console
       </footer>
     </div>

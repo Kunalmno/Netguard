@@ -1,4 +1,6 @@
 import React from 'react';
+import { Modal } from '../ui/modal.tsx';
+import { SeverityBadge } from '../ui/severity-badge.tsx';
 import { Badge } from '../ui/badge.tsx';
 import { Button } from '../ui/button.tsx';
 import { X, ShieldAlert, ArrowRight, Network, FileText, CheckCircle, ExternalLink } from 'lucide-react';
@@ -19,19 +21,7 @@ export const AlertDetailModal: React.FC<AlertDetailModalProps> = ({
 }) => {
   if (!alert) return null;
 
-  const getSeverityBadge = (severity: AlertSeverity) => {
-    switch (severity) {
-      case 'CRITICAL':
-        return <Badge variant="destructive">CRITICAL</Badge>;
-      case 'HIGH':
-        return <Badge variant="destructive">HIGH</Badge>;
-      case 'MEDIUM':
-        return <Badge variant="warning">MEDIUM</Badge>;
-      case 'LOW':
-      default:
-        return <Badge variant="info">LOW</Badge>;
-    }
-  };
+  const getSeverityBadge = (sev: string) => <SeverityBadge severity={sev} />;
 
   const getStatusBadge = (status: AlertStatus) => {
     switch (status) {
@@ -48,8 +38,7 @@ export const AlertDetailModal: React.FC<AlertDetailModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl text-zinc-100 max-h-[90vh] overflow-y-auto">
+    <Modal onClose={onClose} label={`Alert ${alert.id}`} widthClass="max-w-2xl">
         {/* Header */}
         <div className="flex items-start justify-between pb-4 border-b border-zinc-800">
           <div className="space-y-1">
@@ -63,7 +52,7 @@ export const AlertDetailModal: React.FC<AlertDetailModalProps> = ({
               {alert.title}
             </h2>
           </div>
-          <Button
+          <Button aria-label="Close"
             variant="ghost"
             size="icon"
             onClick={onClose}
@@ -78,37 +67,37 @@ export const AlertDetailModal: React.FC<AlertDetailModalProps> = ({
           {/* Metadata Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-zinc-900/40 p-3 rounded-lg border border-zinc-800 font-mono">
             <div>
-              <span className="text-[10px] text-zinc-500 uppercase block">Signature ID (SID)</span>
+              <span className="text-xs text-zinc-500 uppercase block">Signature ID (SID)</span>
               <span className="text-zinc-200 font-bold">{alert.signatureId}</span>
             </div>
             <div>
-              <span className="text-[10px] text-zinc-500 uppercase block">Status</span>
+              <span className="text-xs text-zinc-500 uppercase block">Status</span>
               <span className="text-zinc-200">{alert.status}</span>
             </div>
             <div>
-              <span className="text-[10px] text-zinc-500 uppercase block">Created</span>
+              <span className="text-xs text-zinc-500 uppercase block">Created</span>
               <span className="text-zinc-300">{new Date(alert.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
             <div>
-              <span className="text-[10px] text-zinc-500 uppercase block">Source Event</span>
+              <span className="text-xs text-zinc-500 uppercase block">Source Event</span>
               <span className="text-sky-400">{alert.securityEventId ? `#${alert.securityEventId}` : 'Manual'}</span>
             </div>
           </div>
 
           {/* Traffic Path */}
           <div className="space-y-1.5 bg-zinc-900/40 p-3.5 rounded-lg border border-zinc-800 font-mono">
-            <div className="flex items-center gap-1.5 text-zinc-400 text-[11px] mb-1">
+            <div className="flex items-center gap-1.5 text-zinc-400 text-xs mb-1">
               <Network className="h-3.5 w-3.5 text-zinc-500" />
               <span>NETWORK TRAFFIC VECTOR</span>
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
               <div className="space-y-0.5">
-                <span className="text-[10px] text-zinc-500 uppercase block">Source Host</span>
+                <span className="text-xs text-zinc-500 uppercase block">Source Host</span>
                 <span className="text-zinc-100 font-medium">{alert.sourceIp}</span>
               </div>
               <ArrowRight className="h-4 w-4 text-zinc-600 hidden sm:block shrink-0" />
               <div className="space-y-0.5 sm:text-right">
-                <span className="text-[10px] text-zinc-500 uppercase block">Destination Host</span>
+                <span className="text-xs text-zinc-500 uppercase block">Destination Host</span>
                 <span className="text-zinc-100 font-medium">{alert.destinationIp}</span>
               </div>
             </div>
@@ -117,7 +106,7 @@ export const AlertDetailModal: React.FC<AlertDetailModalProps> = ({
           {/* Description */}
           {alert.description && (
             <div className="p-3 bg-zinc-900/40 rounded-lg border border-zinc-800 space-y-1">
-              <span className="text-[10px] text-zinc-500 uppercase font-mono block">Context / Description</span>
+              <span className="text-xs text-zinc-500 uppercase font-mono block">Context / Description</span>
               <p className="text-zinc-300 font-medium leading-relaxed">{alert.description}</p>
             </div>
           )}
@@ -126,16 +115,16 @@ export const AlertDetailModal: React.FC<AlertDetailModalProps> = ({
           {alert.sourceEvent && (
             <div className="space-y-2 p-3 bg-zinc-900/60 rounded-lg border border-zinc-800">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-mono text-zinc-400 flex items-center gap-1.5">
+                <span className="text-xs font-mono text-zinc-400 flex items-center gap-1.5">
                   <FileText className="h-3.5 w-3.5 text-sky-400" />
                   ORIGINATING SNORT TELEMETRY EVENT #{alert.sourceEvent.id}
                 </span>
-                <span className="text-[11px] font-mono text-zinc-500">
+                <span className="text-xs font-mono text-zinc-500">
                   {alert.sourceEvent.protocol} {alert.sourceEvent.sourcePort ? `:${alert.sourceEvent.sourcePort}` : ''}
                 </span>
               </div>
               {alert.sourceEvent.rawPayload && (
-                <pre className="p-2.5 rounded bg-zinc-950 border border-zinc-800/80 font-mono text-[11px] text-zinc-300 overflow-x-auto whitespace-pre-wrap break-all max-h-28">
+                <pre className="p-2.5 rounded bg-zinc-950 border border-zinc-800/80 font-mono text-xs text-zinc-300 overflow-x-auto whitespace-pre-wrap break-all max-h-28">
                   {alert.sourceEvent.rawPayload}
                 </pre>
               )}
@@ -145,7 +134,7 @@ export const AlertDetailModal: React.FC<AlertDetailModalProps> = ({
           {/* Status Quick Action Controls for Analysts/Admins */}
           {canManage && onStatusChange && (
             <div className="pt-2 border-t border-zinc-800 flex items-center justify-between">
-              <span className="text-[11px] font-mono text-zinc-400">Transition Status:</span>
+              <span className="text-xs font-mono text-zinc-400">Transition Status:</span>
               <div className="flex items-center gap-1.5">
                 {alert.status === 'NEW' && (
                   <>
@@ -208,7 +197,6 @@ export const AlertDetailModal: React.FC<AlertDetailModalProps> = ({
             Close
           </Button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };

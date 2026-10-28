@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { SeverityBadge } from '../ui/severity-badge.tsx';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { useRealtime } from '../../context/RealtimeContext.tsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card.tsx';
@@ -47,6 +48,8 @@ export const SocDashboardView: React.FC<SocDashboardViewProps> = ({ onNavigate }
   const [error, setError] = useState<string | null>(null);
   const [ingestingSample, setIngestingSample] = useState(false);
   const [ingestSuccess, setIngestSuccess] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
+  const [now, setNow] = useState<number>(() => Date.now());
 
   const canManage = user?.role === 'ADMIN' || user?.role === 'ANALYST';
 
@@ -93,6 +96,7 @@ export const SocDashboardView: React.FC<SocDashboardViewProps> = ({ onNavigate }
       setError(err.message || 'Failed to load analytics');
     } finally {
       setLoading(false);
+      setLastUpdated(Date.now());
     }
   }, [token, timeRange]);
 
@@ -100,8 +104,18 @@ export const SocDashboardView: React.FC<SocDashboardViewProps> = ({ onNavigate }
     fetchDashboardData();
   }, [fetchDashboardData]);
 
+  // tick every 5s so the "updated Ns ago" stamp stays honest
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 5000);
+    return () => clearInterval(id);
+  }, []);
+
+  const ageSec = lastUpdated ? Math.max(0, Math.round((now - lastUpdated) / 1000)) : null;
+  const isStale = ageSec !== null && ageSec > 60;
+
   // Realtime subscription & mandatory resync
   useEffect(() => {
+    let resyncTimer: ReturnType<typeof setTimeout> | null = null;
     const unsubscribe = subscribe('*', (msg) => {
       // Optimistic updates
       if (msg.event === 'alert:created' && msg.data) {
@@ -122,11 +136,15 @@ export const SocDashboardView: React.FC<SocDashboardViewProps> = ({ onNavigate }
         );
       }
 
-      // Mandatory full REST resync / refresh metrics
-      fetchDashboardData();
+      // Mandatory full REST resync – batched so bursts of events cause one refetch
+      if (resyncTimer) clearTimeout(resyncTimer);
+      resyncTimer = setTimeout(() => fetchDashboardData(), 2000);
     });
 
-    return unsubscribe;
+    return () => {
+      if (resyncTimer) clearTimeout(resyncTimer);
+      unsubscribe();
+    };
   }, [subscribe, fetchDashboardData]);
 
   // Quick ingest sample Snort alert
@@ -182,23 +200,7 @@ export const SocDashboardView: React.FC<SocDashboardViewProps> = ({ onNavigate }
     }
   };
 
-  const getSeverityBadge = (sev: string) => {
-    switch (sev) {
-      case 'SEV1':
-      case 'CRITICAL':
-        return <Badge variant="destructive">CRITICAL</Badge>;
-      case 'SEV2':
-      case 'HIGH':
-        return <Badge variant="destructive">HIGH</Badge>;
-      case 'SEV3':
-      case 'MEDIUM':
-        return <Badge variant="warning">MEDIUM</Badge>;
-      case 'SEV4':
-      case 'LOW':
-      default:
-        return <Badge variant="info">LOW</Badge>;
-    }
-  };
+  const getSeverityBadge = (sev: string) => <SeverityBadge severity={sev} />;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -229,29 +231,38 @@ export const SocDashboardView: React.FC<SocDashboardViewProps> = ({ onNavigate }
 
   return (
     <div className="space-y-6">
-      {/* Top Banner / System Greeting & Time Range Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-zinc-800">
+      {/* Page header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-3 border-b-2 border-zinc-100">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-zinc-100 flex items-center gap-2">
-            <Activity className="h-5 w-5 text-emerald-400" />
-            Security Operations Command Center
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-100">
+            Security operations
           </h1>
-          <p className="text-xs text-zinc-400 font-mono">
-            NetGuard V2.1 &bull; SOC Analytics, Triage Matrix & MTTD Performance
+          <p className="text-sm text-zinc-400 max-w-prose">
+            Triage the highest-severity work first. Metrics cover the selected window.
           </p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Time Range Selector */}
-          <div className="inline-flex rounded-lg bg-zinc-900 border border-zinc-800 p-0.5 font-mono text-xs">
+          <span
+            className={`font-mono text-xs ${isStale ? 'text-amber-400' : 'text-zinc-500'}`}
+            role="status"
+          >
+            {isStale ? '⚠ ' : ''}
+            {ageSec === null ? 'Loading…' : ageSec < 5 ? 'Updated just now' : `Updated ${ageSec}s ago`}
+          </span>
+
+          {/* Time range selector */}
+          <div role="group" aria-label="Time range" className="inline-flex rounded-md border border-zinc-800 divide-x divide-zinc-800 font-mono">
             {(['24h', '7d', '30d'] as AnalyticsTimeRange[]).map((range) => (
               <button
                 key={range}
+                type="button"
                 onClick={() => setTimeRange(range)}
-                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-xs font-semibold ${
+                aria-pressed={timeRange === range}
+                className={`px-3 h-10 pointer-coarse:h-11 text-xs font-semibold cursor-pointer transition-colors ${
                   timeRange === range
-                    ? 'bg-zinc-800 text-zinc-100 shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200'
+                    ? 'bg-zinc-100 text-zinc-950'
+                    : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
                 }`}
               >
                 {range}
@@ -259,36 +270,27 @@ export const SocDashboardView: React.FC<SocDashboardViewProps> = ({ onNavigate }
             ))}
           </div>
 
-          {canManage && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleIngestSample}
-              disabled={ingestingSample}
-              className="text-xs flex items-center gap-1.5 border-zinc-700 bg-zinc-900/60 text-zinc-300 hover:text-zinc-100"
-              title="Simulate incoming Snort IDS alert"
-            >
-              <Radio className={`h-3.5 w-3.5 text-red-400 ${ingestingSample ? 'animate-ping' : ''}`} />
-              <span>Simulate Alert</span>
-            </Button>
-          )}
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchDashboardData}
-            disabled={loading}
-            className="text-xs flex items-center gap-1.5 border-zinc-700 bg-zinc-900/60"
-            title="Refresh dashboard metrics"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+          <Button variant="outline" onClick={fetchDashboardData} disabled={loading} title="Refresh dashboard metrics">
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
             <span>Refresh</span>
           </Button>
+
+          {canManage && (
+            <Button
+              variant="ghost"
+              onClick={handleIngestSample}
+              disabled={ingestingSample}
+              title="Developer tool: simulate an incoming Snort IDS alert"
+            >
+              <Radio className="h-4 w-4" aria-hidden="true" />
+              <span>Dev: simulate alert</span>
+            </Button>
+          )}
         </div>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-950/40 border border-red-800/60 rounded-md text-xs text-red-300 flex items-center justify-between">
+        <div role="alert" className="p-3 bg-red-950 border border-red-800 rounded-md text-sm text-red-300 flex items-center justify-between">
           <span>{error}</span>
           <Button variant="ghost" size="sm" onClick={fetchDashboardData} className="h-6 text-xs text-red-300">
             Retry
@@ -297,36 +299,36 @@ export const SocDashboardView: React.FC<SocDashboardViewProps> = ({ onNavigate }
       )}
 
       {ingestSuccess && (
-        <div className="p-3 bg-emerald-950/40 border border-emerald-800/60 rounded-md text-xs text-emerald-300 flex items-center gap-2 animate-in fade-in">
+        <div role="status" className="p-3 bg-emerald-950 border border-emerald-800 rounded-md text-sm text-emerald-300 flex items-center gap-2">
           <CheckCircle className="h-4 w-4 shrink-0 text-emerald-400" />
           <span>{ingestSuccess}</span>
         </div>
       )}
 
       {/* 4 Primary SOC KPI Cards (Powered by V2.1 Analytics Summary) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* Active Incidents & Unassigned Queue */}
-        <Card className="bg-zinc-900/40 border-zinc-800 hover:border-zinc-700 transition-colors">
+        <Card className="border-t-4 border-t-red-400">
           <CardContent className="p-4 space-y-2">
             <div className="flex items-center justify-between text-zinc-400 text-xs">
-              <span className="font-mono uppercase text-[10px] tracking-wider">Active Incidents</span>
+              <span className="font-mono uppercase text-xs tracking-wider">Active Incidents</span>
               <Flame className="h-4 w-4 text-red-400" />
             </div>
             <div className="flex items-baseline justify-between">
-              <span className="text-2xl font-bold font-mono text-zinc-100">
+              <span data-numeric className="text-3xl font-semibold font-mono text-zinc-100 leading-none">
                 {summary ? summary.incidents.active : 0}
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onNavigate('incidents')}
-                className="h-6 px-2 text-[11px] text-zinc-400 hover:text-zinc-100 flex items-center gap-1"
+                className="h-6 px-2 text-xs text-zinc-400 hover:text-zinc-100 flex items-center gap-1"
               >
                 <span>Manage</span>
                 <ArrowRight className="h-3 w-3" />
               </Button>
             </div>
-            <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-1 border-t border-zinc-800/60">
+            <div className="flex items-center justify-between text-xs font-mono text-zinc-500 pt-1 border-t border-zinc-800/60">
               <span className="text-amber-400 font-semibold">{summary?.incidents.unassigned || 0} unassigned</span>
               <span>&bull;</span>
               <span className="text-red-400">{summary?.incidents.bySeverity.sev1 || 0} SEV1</span>
@@ -337,27 +339,27 @@ export const SocDashboardView: React.FC<SocDashboardViewProps> = ({ onNavigate }
         </Card>
 
         {/* Open Actionable Alerts */}
-        <Card className="bg-zinc-900/40 border-zinc-800 hover:border-zinc-700 transition-colors">
+        <Card>
           <CardContent className="p-4 space-y-2">
             <div className="flex items-center justify-between text-zinc-400 text-xs">
-              <span className="font-mono uppercase text-[10px] tracking-wider">Open Alerts</span>
+              <span className="font-mono uppercase text-xs tracking-wider">Open Alerts</span>
               <Bell className="h-4 w-4 text-amber-400" />
             </div>
             <div className="flex items-baseline justify-between">
-              <span className="text-2xl font-bold font-mono text-zinc-100">
+              <span data-numeric className="text-3xl font-semibold font-mono text-zinc-100 leading-none">
                 {summary ? summary.alerts.open : 0}
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onNavigate('alerts')}
-                className="h-6 px-2 text-[11px] text-zinc-400 hover:text-zinc-100 flex items-center gap-1"
+                className="h-6 px-2 text-xs text-zinc-400 hover:text-zinc-100 flex items-center gap-1"
               >
                 <span>Triage</span>
                 <ArrowRight className="h-3 w-3" />
               </Button>
             </div>
-            <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-1 border-t border-zinc-800/60">
+            <div className="flex items-center justify-between text-xs font-mono text-zinc-500 pt-1 border-t border-zinc-800/60">
               <span className="text-red-400">{summary?.alerts.bySeverity.critical || 0} Crit</span>
               <span>&bull;</span>
               <span className="text-amber-400">{summary?.alerts.bySeverity.high || 0} High</span>
@@ -368,24 +370,24 @@ export const SocDashboardView: React.FC<SocDashboardViewProps> = ({ onNavigate }
         </Card>
 
         {/* Mean Time to Detect (MTTD) */}
-        <Card className="bg-zinc-900/40 border-zinc-800 hover:border-zinc-700 transition-colors">
+        <Card>
           <CardContent className="p-4 space-y-2">
             <div className="flex items-center justify-between text-zinc-400 text-xs">
-              <span className="font-mono uppercase text-[10px] tracking-wider">MTTD (Detection Latency)</span>
+              <span className="font-mono uppercase text-xs tracking-wider">MTTD (Detection Latency)</span>
               <Timer className="h-4 w-4 text-sky-400" />
             </div>
             <div className="flex items-baseline justify-between">
-              <span className="text-2xl font-bold font-mono text-zinc-100">
+              <span data-numeric className="text-3xl font-semibold font-mono text-zinc-100 leading-none">
                 {formatMttdLatency(summary?.mttd.averageSeconds ?? null)}
               </span>
               <Badge
                 variant={summary?.mttd.status === 'available' ? 'success' : 'secondary'}
-                className="text-[10px]"
+                className="text-xs"
               >
                 {summary?.mttd.status === 'available' ? 'AVAILABLE' : 'INSUFFICIENT DATA'}
               </Badge>
             </div>
-            <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-1 border-t border-zinc-800/60">
+            <div className="flex items-center justify-between text-xs font-mono text-zinc-500 pt-1 border-t border-zinc-800/60">
               <span>{summary?.mttd.sampleCount || 0} calibrated samples</span>
               {mttdDetails?.medianSeconds !== null && mttdDetails?.medianSeconds !== undefined && (
                 <span>Median: {mttdDetails.medianSeconds}s</span>
@@ -395,27 +397,27 @@ export const SocDashboardView: React.FC<SocDashboardViewProps> = ({ onNavigate }
         </Card>
 
         {/* Snort Telemetry Ingestion */}
-        <Card className="bg-zinc-900/40 border-zinc-800 hover:border-zinc-700 transition-colors">
+        <Card>
           <CardContent className="p-4 space-y-2">
             <div className="flex items-center justify-between text-zinc-400 text-xs">
-              <span className="font-mono uppercase text-[10px] tracking-wider">Snort Telemetry</span>
+              <span className="font-mono uppercase text-xs tracking-wider">Snort Telemetry</span>
               <ShieldAlert className="h-4 w-4 text-emerald-400" />
             </div>
             <div className="flex items-baseline justify-between">
-              <span className="text-2xl font-bold font-mono text-zinc-100">
+              <span data-numeric className="text-3xl font-semibold font-mono text-zinc-100 leading-none">
                 {summary ? summary.telemetry.totalEvents : 0}
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onNavigate('events')}
-                className="h-6 px-2 text-[11px] text-zinc-400 hover:text-zinc-100 flex items-center gap-1"
+                className="h-6 px-2 text-xs text-zinc-400 hover:text-zinc-100 flex items-center gap-1"
               >
                 <span>Inspect</span>
                 <ArrowRight className="h-3 w-3" />
               </Button>
             </div>
-            <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-1 border-t border-zinc-800/60 truncate">
+            <div className="flex items-center justify-between text-xs font-mono text-zinc-500 pt-1 border-t border-zinc-800/60 truncate">
               <span className="text-red-400">{summary?.telemetry.highPriorityEvents || 0} High Priority</span>
               <span>&bull;</span>
               <span className="text-zinc-400">Past {timeRange}</span>
@@ -424,9 +426,128 @@ export const SocDashboardView: React.FC<SocDashboardViewProps> = ({ onNavigate }
         </Card>
       </div>
 
+      {/* Operational Queues: Ongoing Security Incidents & Urgent Untriaged Alerts */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+        {/* Ongoing Incidents Feed (primary) */}
+        <Card className="xl:col-span-7">
+          <CardHeader className="p-4 pb-3 border-b border-zinc-800 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Flame className="h-4 w-4 text-red-400" />
+                Active Security Incidents
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Coordinated investigations currently underway
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onNavigate('incidents')}
+              className="text-xs"
+            >
+              View All ({summary?.incidents.total || 0})
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0 divide-y divide-zinc-800/80">
+            {loading ? (
+              <div className="py-8 text-center text-zinc-400 font-mono text-xs">
+                Loading active incidents...
+              </div>
+            ) : activeIncidents.length === 0 ? (
+              <div className="py-8 text-center text-zinc-400 font-mono text-xs">
+                No active incidents currently recorded.
+              </div>
+            ) : (
+              activeIncidents.map((inc) => (
+                <div key={inc.id} className="p-3.5 hover:bg-zinc-800 transition-colors flex items-center justify-between gap-3 text-xs">
+                  <div className="space-y-1 truncate">
+                    <div className="flex items-center gap-2">
+                      {getSeverityBadge(inc.severity)}
+                      {getStatusBadge(inc.status)}
+                      <span className="font-semibold text-zinc-200 truncate">{inc.title}</span>
+                    </div>
+                    <div className="text-xs text-zinc-400 font-mono truncate">
+                      Assignee: {inc.assignee ? inc.assignee.email : <span className="text-amber-400">Unassigned</span>} &bull; {inc.alertCount} alerts linked
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onNavigate('incidents')}
+                    className="px-2 text-xs text-zinc-400 hover:text-zinc-100 shrink-0"
+                  >
+                    <Eye className="h-3.5 w-3.5 mr-1" />
+                    <span>Open</span>
+                  </Button>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Untriaged Alerts Feed */}
+        <Card className="xl:col-span-5">
+          <CardHeader className="p-4 pb-3 border-b border-zinc-800 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Bell className="h-4 w-4 text-amber-400" />
+                Urgent Alerts Triage Feed
+              </CardTitle>
+              <CardDescription className="text-xs">
+                High-priority detections awaiting triage
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onNavigate('alerts')}
+              className="text-xs"
+            >
+              Alerts Table
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0 divide-y divide-zinc-800/80">
+            {loading ? (
+              <div className="py-8 text-center text-zinc-400 font-mono text-xs">
+                Loading urgent alerts...
+              </div>
+            ) : urgentAlerts.length === 0 ? (
+              <div className="py-8 text-center text-zinc-400 font-mono text-xs">
+                Zero untriaged alerts. Clean operating queue.
+              </div>
+            ) : (
+              urgentAlerts.map((al) => (
+                <div key={al.id} className="p-3.5 hover:bg-zinc-800 transition-colors flex items-center justify-between gap-3 text-xs">
+                  <div className="space-y-1 truncate">
+                    <div className="flex items-center gap-2">
+                      {getSeverityBadge(al.severity)}
+                      <span className="font-mono text-zinc-400 font-bold">#{al.id}</span>
+                      <span className="font-semibold text-zinc-200 truncate">{al.title}</span>
+                    </div>
+                    <div className="text-xs text-zinc-500 font-mono truncate">
+                      {al.sourceIp} &rarr; {al.destinationIp} &bull; SID:{al.signatureId}
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onNavigate('alerts')}
+                    className="px-2 text-xs text-zinc-400 hover:text-zinc-100 shrink-0"
+                  >
+                    <Eye className="h-3.5 w-3.5 mr-1" />
+                    <span>Triage</span>
+                  </Button>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       {/* V2.1 Historical Trends Visualizations */}
       {trends && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <AnalyticsTrendsChart
             title="Alert Ingestion & Triage Velocity"
             description={`Continuous hourly/daily alert distribution over the past ${timeRange}`}
@@ -446,158 +567,44 @@ export const SocDashboardView: React.FC<SocDashboardViewProps> = ({ onNavigate }
         </div>
       )}
 
-      {/* Operational Queues: Ongoing Security Incidents & Urgent Untriaged Alerts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Ongoing Incidents Feed */}
-        <Card className="bg-zinc-900/30">
-          <CardHeader className="p-4 pb-3 border-b border-zinc-800 flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Flame className="h-4 w-4 text-red-400" />
-                Active Security Incidents
-              </CardTitle>
-              <CardDescription className="text-[11px]">
-                Coordinated investigations currently underway
-              </CardDescription>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onNavigate('incidents')}
-              className="h-7 text-xs border-zinc-700 bg-zinc-900"
-            >
-              View All ({summary?.incidents.total || 0})
-            </Button>
-          </CardHeader>
-          <CardContent className="p-0 divide-y divide-zinc-800/80">
-            {loading ? (
-              <div className="py-8 text-center text-zinc-500 font-mono text-xs">
-                Loading active incidents...
-              </div>
-            ) : activeIncidents.length === 0 ? (
-              <div className="py-8 text-center text-zinc-500 font-mono text-xs">
-                No active incidents currently recorded.
-              </div>
-            ) : (
-              activeIncidents.map((inc) => (
-                <div key={inc.id} className="p-3.5 hover:bg-zinc-900/50 transition-colors flex items-center justify-between gap-3 text-xs">
-                  <div className="space-y-1 truncate">
-                    <div className="flex items-center gap-2">
-                      {getSeverityBadge(inc.severity)}
-                      {getStatusBadge(inc.status)}
-                      <span className="font-semibold text-zinc-200 truncate">{inc.title}</span>
-                    </div>
-                    <div className="text-[11px] text-zinc-400 font-mono truncate">
-                      Assignee: {inc.assignee ? inc.assignee.email : <span className="text-amber-400">Unassigned</span>} &bull; {inc.alertCount} alerts linked
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onNavigate('incidents')}
-                    className="h-7 px-2 text-xs text-zinc-400 hover:text-zinc-100 shrink-0"
-                  >
-                    <Eye className="h-3.5 w-3.5 mr-1" />
-                    <span>Open</span>
-                  </Button>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Untriaged Alerts Feed */}
-        <Card className="bg-zinc-900/30">
-          <CardHeader className="p-4 pb-3 border-b border-zinc-800 flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Bell className="h-4 w-4 text-amber-400" />
-                Urgent Alerts Triage Feed
-              </CardTitle>
-              <CardDescription className="text-[11px]">
-                High-priority detections awaiting triage
-              </CardDescription>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onNavigate('alerts')}
-              className="h-7 text-xs border-zinc-700 bg-zinc-900"
-            >
-              Alerts Table
-            </Button>
-          </CardHeader>
-          <CardContent className="p-0 divide-y divide-zinc-800/80">
-            {loading ? (
-              <div className="py-8 text-center text-zinc-500 font-mono text-xs">
-                Loading urgent alerts...
-              </div>
-            ) : urgentAlerts.length === 0 ? (
-              <div className="py-8 text-center text-zinc-500 font-mono text-xs">
-                Zero untriaged alerts. Clean operating queue.
-              </div>
-            ) : (
-              urgentAlerts.map((al) => (
-                <div key={al.id} className="p-3.5 hover:bg-zinc-900/50 transition-colors flex items-center justify-between gap-3 text-xs">
-                  <div className="space-y-1 truncate">
-                    <div className="flex items-center gap-2">
-                      {getSeverityBadge(al.severity)}
-                      <span className="font-mono text-zinc-400 font-bold">#{al.id}</span>
-                      <span className="font-semibold text-zinc-200 truncate">{al.title}</span>
-                    </div>
-                    <div className="text-[11px] text-zinc-500 font-mono truncate">
-                      {al.sourceIp} &rarr; {al.destinationIp} &bull; SID:{al.signatureId}
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onNavigate('alerts')}
-                    className="h-7 px-2 text-xs text-zinc-400 hover:text-zinc-100 shrink-0"
-                  >
-                    <Eye className="h-3.5 w-3.5 mr-1" />
-                    <span>Triage</span>
-                  </Button>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Cross Navigation Shortcuts */}
       <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-zinc-400">
         <span>Operational Quick Links:</span>
         <div className="flex items-center gap-2 flex-wrap">
           <button
+            type="button"
             onClick={() => onNavigate('alerts')}
-            className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/60 text-zinc-200 cursor-pointer text-xs"
+            className="px-2.5 py-1 min-h-8 pointer-coarse:min-h-11 rounded-sm bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 cursor-pointer text-xs"
           >
             Alert Triage
           </button>
           <button
+            type="button"
             onClick={() => onNavigate('incidents')}
-            className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/60 text-zinc-200 cursor-pointer text-xs"
+            className="px-2.5 py-1 min-h-8 pointer-coarse:min-h-11 rounded-sm bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 cursor-pointer text-xs"
           >
             Incidents
           </button>
           <button
+            type="button"
             onClick={() => onNavigate('events')}
-            className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/60 text-zinc-200 cursor-pointer text-xs"
+            className="px-2.5 py-1 min-h-8 pointer-coarse:min-h-11 rounded-sm bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 cursor-pointer text-xs"
           >
             Telemetry Events
           </button>
           {user?.role === 'ADMIN' && (
             <button
+              type="button"
               onClick={() => onNavigate('admin')}
-              className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/60 text-zinc-200 cursor-pointer text-xs"
+              className="px-2.5 py-1 min-h-8 pointer-coarse:min-h-11 rounded-sm bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 cursor-pointer text-xs"
             >
               Operator Admin
             </button>
           )}
           <button
+            type="button"
             onClick={() => onNavigate('docs')}
-            className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/60 text-zinc-200 cursor-pointer text-xs"
+            className="px-2.5 py-1 min-h-8 pointer-coarse:min-h-11 rounded-sm bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 cursor-pointer text-xs"
           >
             OpenAPI Specs
           </button>

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Select } from '../ui/select.tsx';
+import { SeverityBadge } from '../ui/severity-badge.tsx';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { useRealtime } from '../../context/RealtimeContext.tsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card.tsx';
@@ -226,19 +228,7 @@ export const IncidentsView: React.FC = () => {
     setPage(1);
   };
 
-  const getSeverityBadge = (sev: string) => {
-    switch (sev) {
-      case 'SEV1':
-        return <Badge variant="destructive">SEV1 - CRIT</Badge>;
-      case 'SEV2':
-        return <Badge variant="destructive">SEV2 - HIGH</Badge>;
-      case 'SEV3':
-        return <Badge variant="warning">SEV3 - MED</Badge>;
-      case 'SEV4':
-      default:
-        return <Badge variant="info">SEV4 - LOW</Badge>;
-    }
-  };
+  const getSeverityBadge = (sev: string) => <SeverityBadge severity={sev} />;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -330,13 +320,13 @@ export const IncidentsView: React.FC = () => {
 
             {/* Status Selector */}
             <div>
-              <select
+              <Select
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
                   setPage(1);
                 }}
-                className="w-full h-9 rounded-md border border-zinc-700 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-200 font-mono focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                className="w-full"
               >
                 <option value="">All Statuses</option>
                 <option value="OPEN">OPEN</option>
@@ -344,25 +334,25 @@ export const IncidentsView: React.FC = () => {
                 <option value="CONTAINED">CONTAINED</option>
                 <option value="RESOLVED">RESOLVED</option>
                 <option value="CLOSED">CLOSED</option>
-              </select>
+              </Select>
             </div>
 
             {/* Severity Selector */}
             <div className="flex gap-2">
-              <select
+              <Select
                 value={severityFilter}
                 onChange={(e) => {
                   setSeverityFilter(e.target.value);
                   setPage(1);
                 }}
-                className="w-full h-9 rounded-md border border-zinc-700 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-200 font-mono focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                className="w-full"
               >
                 <option value="">All Severities</option>
                 <option value="SEV1">SEV1 (Critical)</option>
                 <option value="SEV2">SEV2 (High)</option>
                 <option value="SEV3">SEV3 (Medium)</option>
                 <option value="SEV4">SEV4 (Low)</option>
-              </select>
+              </Select>
 
               <Button
                 variant="outline"
@@ -381,18 +371,18 @@ export const IncidentsView: React.FC = () => {
       {/* Incidents Table */}
       <Card>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          <div className="overflow-auto max-h-[70vh]">
             <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-zinc-800 bg-zinc-900/60 text-zinc-400 font-mono text-[11px] uppercase tracking-wider">
-                  <th className="py-3 px-4">Severity</th>
-                  <th className="py-3 px-3">Status</th>
-                  <th className="py-3 px-3">ID</th>
-                  <th className="py-3 px-4">Incident Case Title & Scope</th>
-                  <th className="py-3 px-3">Alerts</th>
-                  <th className="py-3 px-4">Lead Assignee</th>
-                  <th className="py-3 px-4">Declared</th>
-                  <th className="py-3 px-3 text-right">Detail</th>
+              <thead className="sticky top-0 z-10 bg-zinc-900">
+                <tr className="border-b-2 border-zinc-800 bg-zinc-900 text-zinc-400 font-mono text-xs uppercase tracking-wider">
+                  <th scope="col" className="py-3 px-4">Severity</th>
+                  <th scope="col" className="py-3 px-3">Status</th>
+                  <th scope="col" className="py-3 px-3">ID</th>
+                  <th scope="col" className="py-3 px-4">Incident Case Title & Scope</th>
+                  <th scope="col" className="py-3 px-3">Alerts</th>
+                  <th scope="col" className="py-3 px-4">Lead Assignee</th>
+                  <th scope="col" className="py-3 px-4">Declared</th>
+                  <th scope="col" className="py-3 px-3 text-right">Detail</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/80">
@@ -427,24 +417,24 @@ export const IncidentsView: React.FC = () => {
                         <div className="font-semibold text-zinc-100 truncate">
                           {inc.title}
                         </div>
-                        <div className="text-[11px] text-zinc-400 truncate">
+                        <div className="text-xs text-zinc-400 truncate">
                           {inc.description}
                         </div>
                       </td>
                       <td className="py-2.5 px-3 whitespace-nowrap font-mono">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300 text-[11px]">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs">
                           <LinkIcon className="h-3 w-3 text-zinc-500" />
                           {inc.alertCount}
                         </span>
                       </td>
-                      <td className="py-2.5 px-4 whitespace-nowrap font-mono text-[11px]">
+                      <td className="py-2.5 px-4 whitespace-nowrap font-mono text-xs">
                         {inc.assignee ? (
                           <span className="text-zinc-300">{inc.assignee.email}</span>
                         ) : (
                           <span className="text-amber-400 font-sans italic">Unassigned</span>
                         )}
                       </td>
-                      <td className="py-2.5 px-4 font-mono text-[11px] text-zinc-500 whitespace-nowrap">
+                      <td className="py-2.5 px-4 font-mono text-xs text-zinc-500 whitespace-nowrap">
                         {new Date(inc.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}{' '}
                         <span className="text-zinc-600">{new Date(inc.createdAt).toISOString().split('T')[0]}</span>
                       </td>
@@ -475,18 +465,18 @@ export const IncidentsView: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <select
+              <Select
                 value={limit}
                 onChange={(e) => {
                   setLimit(Number(e.target.value));
                   setPage(1);
                 }}
-                className="h-8 rounded border border-zinc-800 bg-zinc-900 px-2 text-xs font-mono text-zinc-300 focus:outline-none"
+                
               >
                 <option value="10">10 / page</option>
                 <option value="20">20 / page</option>
                 <option value="50">50 / page</option>
-              </select>
+              </Select>
 
               <div className="flex items-center space-x-1">
                 <Button

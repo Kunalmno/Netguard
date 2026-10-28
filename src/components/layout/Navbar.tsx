@@ -3,209 +3,153 @@ import { useAuth } from '../../context/AuthContext.tsx';
 import { useRealtime } from '../../context/RealtimeContext.tsx';
 import { Badge } from '../ui/badge.tsx';
 import { Button } from '../ui/button.tsx';
-import { Shield, Activity, Users, FileCode2, LogOut, ShieldAlert, Bell, Flame, Wifi, WifiOff } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle.tsx';
+import { Activity, Users, FileCode2, LogOut, ShieldAlert, Bell, Flame, Menu, X } from 'lucide-react';
+
+export type TabId = 'overview' | 'alerts' | 'incidents' | 'events' | 'admin' | 'docs';
 
 export interface NavbarProps {
-  currentTab: 'overview' | 'alerts' | 'incidents' | 'events' | 'admin' | 'docs';
-  onSelectTab: (tab: 'overview' | 'alerts' | 'incidents' | 'events' | 'admin' | 'docs') => void;
+  currentTab: TabId;
+  onSelectTab: (tab: TabId) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab }) => {
   const { user, logout } = useAuth();
   const { status: realtimeStatus, reconnect } = useRealtime();
-  const [backendHealthy, setBackendHealthy] = useState<boolean | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
+  const tabs: { id: TabId; label: string; icon: React.ReactNode; show: boolean }[] = [
+    { id: 'overview', label: 'Dashboard', icon: <Activity className="h-4 w-4" aria-hidden="true" />, show: true },
+    { id: 'alerts', label: 'Alerts', icon: <Bell className="h-4 w-4" aria-hidden="true" />, show: true },
+    { id: 'incidents', label: 'Incidents', icon: <Flame className="h-4 w-4" aria-hidden="true" />, show: true },
+    { id: 'events', label: 'Events', icon: <ShieldAlert className="h-4 w-4" aria-hidden="true" />, show: true },
+    { id: 'admin', label: 'Admin', icon: <Users className="h-4 w-4" aria-hidden="true" />, show: user?.role === 'ADMIN' },
+    { id: 'docs', label: 'API', icon: <FileCode2 className="h-4 w-4" aria-hidden="true" />, show: true },
+  ];
+
+  // Esc closes the mobile menu
   useEffect(() => {
-    let mounted = true;
-    const checkHealth = async () => {
-      try {
-        const res = await fetch('/api/health');
-        if (mounted) {
-          setBackendHealthy(res.ok);
-        }
-      } catch {
-        if (mounted) {
-          setBackendHealthy(false);
-        }
-      }
-    };
-    checkHealth();
-    const interval = setInterval(checkHealth, 30000);
-    return () => {
-      mounted = false;
-      clearInterval(interval);
-    };
-  }, []);
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenuOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [menuOpen]);
 
-  const getRoleBadgeVariant = (role?: string) => {
-    switch (role) {
-      case 'ADMIN':
-        return 'destructive';
-      case 'ANALYST':
-        return 'info';
-      case 'VIEWER':
-      default:
-        return 'secondary';
-    }
+  const choose = (id: TabId) => {
+    setMenuOpen(false);
+    onSelectTab(id);
   };
 
+  const roleVariant = user?.role === 'ADMIN' ? 'destructive' : user?.role === 'ANALYST' ? 'info' : 'secondary';
+
+  const live = realtimeStatus === 'CONNECTED';
+  const connecting = realtimeStatus === 'CONNECTING' || realtimeStatus === 'RECONNECTING';
+  const liveLabel = live ? 'Realtime live' : realtimeStatus === 'RECONNECTING' ? 'Reconnecting…' : connecting ? 'Connecting…' : 'Socket offline';
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto flex h-14 items-center justify-between px-4 sm:px-6">
-        {/* Brand & Left Navigation */}
-        <div className="flex items-center gap-6">
-          <div
-            onClick={() => onSelectTab('overview')}
-            className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity"
-          >
-            <div className="h-8 w-8 rounded-lg bg-zinc-900 border border-zinc-700/60 flex items-center justify-center text-zinc-100 shadow-sm">
-              <Shield className="h-4 w-4 text-zinc-200" />
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="font-bold tracking-tight text-zinc-100 text-sm">NetGuard</span>
-              <span className="text-[10px] font-mono text-zinc-300 font-semibold uppercase px-1 py-0.2 bg-zinc-900 border border-zinc-700 rounded">V2.2</span>
-            </div>
-          </div>
+    <header className="sticky top-0 z-40 w-full border-b border-zinc-800 bg-zinc-900">
+      <div className="max-w-[1400px] mx-auto flex min-h-14 items-center gap-2 sm:gap-4 px-3 sm:px-4">
+        {/* Brand */}
+        <button
+          type="button"
+          onClick={() => choose('overview')}
+          className="flex items-center gap-2 cursor-pointer font-bold tracking-wide text-zinc-100"
+          aria-label="NetGuard – go to dashboard"
+        >
+          <span aria-hidden="true" className="h-7 w-7 grid place-items-center bg-accent text-on-accent font-mono font-semibold rounded-sm">N</span>
+          <span>NetGuard</span>
+          <span className="hidden sm:inline font-mono text-xs font-normal text-zinc-500">v2.2</span>
+        </button>
 
-          {/* Navigation Links */}
-          <nav className="flex items-center space-x-1 sm:space-x-2">
+        {/* Primary nav (desktop) */}
+        <nav aria-label="Primary" className="hidden lg:flex items-stretch">
+          {tabs.filter((t) => t.show).map((t) => (
             <button
-              onClick={() => onSelectTab('overview')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                currentTab === 'overview'
-                  ? 'bg-zinc-800 text-zinc-100 shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+              key={t.id}
+              type="button"
+              onClick={() => choose(t.id)}
+              aria-current={currentTab === t.id ? 'page' : undefined}
+              className={`flex items-center gap-2 min-h-14 px-3 text-sm font-medium cursor-pointer border-b-[3px] transition-colors ${
+                currentTab === t.id
+                  ? 'text-zinc-100 border-accent'
+                  : 'text-zinc-400 border-transparent hover:text-zinc-100 hover:bg-zinc-800'
               }`}
             >
-              <Activity className="h-3.5 w-3.5" />
-              <span>Dashboard</span>
+              {t.icon}
+              {t.label}
             </button>
+          ))}
+        </nav>
 
-            <button
-              onClick={() => onSelectTab('alerts')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                currentTab === 'alerts'
-                  ? 'bg-zinc-800 text-zinc-100 shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-              }`}
-            >
-              <Bell className="h-3.5 w-3.5 text-amber-400" />
-              <span>Alerts</span>
-            </button>
-
-            <button
-              onClick={() => onSelectTab('incidents')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                currentTab === 'incidents'
-                  ? 'bg-zinc-800 text-zinc-100 shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-              }`}
-            >
-              <Flame className="h-3.5 w-3.5 text-red-400" />
-              <span>Incidents</span>
-            </button>
-
-            <button
-              onClick={() => onSelectTab('events')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                currentTab === 'events'
-                  ? 'bg-zinc-800 text-zinc-100 shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-              }`}
-            >
-              <ShieldAlert className="h-3.5 w-3.5" />
-              <span>Security Events</span>
-            </button>
-
-            {/* Role-Protected Admin Tab */}
-            {user?.role === 'ADMIN' && (
-              <button
-                onClick={() => onSelectTab('admin')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                  currentTab === 'admin'
-                    ? 'bg-zinc-800 text-zinc-100 shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-                }`}
-              >
-                <Users className="h-3.5 w-3.5" />
-                <span>Administration</span>
-              </button>
-            )}
-
-            <button
-              onClick={() => onSelectTab('docs')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                currentTab === 'docs'
-                  ? 'bg-zinc-800 text-zinc-100 shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-              }`}
-            >
-              <FileCode2 className="h-3.5 w-3.5" />
-              <span>API Specs</span>
-            </button>
-          </nav>
-        </div>
-
-        {/* Right User & System Status */}
-        <div className="flex items-center gap-3">
-          {/* Realtime Socket Status Indicator */}
-          <div
-            onClick={realtimeStatus !== 'CONNECTED' ? reconnect : undefined}
-            className={`hidden sm:flex items-center gap-1.5 text-[11px] font-mono px-2.5 py-1 rounded-full border transition-colors select-none ${
-              realtimeStatus !== 'CONNECTED' ? 'cursor-pointer hover:bg-zinc-800' : ''
-            } ${
-              realtimeStatus === 'CONNECTED'
-                ? 'text-emerald-400 bg-emerald-950/30 border-emerald-800/40'
-                : realtimeStatus === 'RECONNECTING' || realtimeStatus === 'CONNECTING'
-                ? 'text-amber-400 bg-amber-950/30 border-amber-800/40'
-                : 'text-zinc-400 bg-zinc-900/60 border-zinc-800'
-            }`}
-            title={realtimeStatus !== 'CONNECTED' ? 'Click to reconnect realtime socket' : 'Connected to NetGuard SOC Realtime Gateway'}
+        {/* Right side */}
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={!live ? reconnect : undefined}
+            disabled={live}
+            role="status"
+            title={live ? 'Connected to the NetGuard realtime gateway' : 'Click to reconnect'}
+            className={`inline-flex items-center gap-2 whitespace-nowrap font-mono text-xs ${live ? 'text-zinc-400 cursor-default' : 'text-amber-400 cursor-pointer underline underline-offset-4'}`}
           >
             <span
-              className={`h-1.5 w-1.5 rounded-full ${
-                realtimeStatus === 'CONNECTED'
-                  ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse'
-                  : realtimeStatus === 'RECONNECTING' || realtimeStatus === 'CONNECTING'
-                  ? 'bg-amber-400 animate-ping'
-                  : 'bg-zinc-500'
-              }`}
+              aria-hidden="true"
+              className={`h-2 w-2 ${live ? 'bg-emerald-400 animate-pulse' : connecting ? 'bg-amber-400' : 'bg-zinc-500'}`}
             />
-            <span>
-              {realtimeStatus === 'CONNECTED'
-                ? 'REALTIME LIVE'
-                : realtimeStatus === 'RECONNECTING'
-                ? 'RECONNECTING...'
-                : realtimeStatus === 'CONNECTING'
-                ? 'CONNECTING...'
-                : 'SOCKET OFFLINE'}
-            </span>
-          </div>
+            <span className="hidden sm:inline">{liveLabel}</span>
+            <span className="sm:hidden sr-only">{liveLabel}</span>
+          </button>
 
-          {/* User & Role Badge */}
+          <div className="hidden md:block"><ThemeToggle /></div>
+
           {user && (
-            <div className="flex items-center gap-2 pl-2 border-l border-zinc-800">
-              <div className="hidden md:flex flex-col text-right">
-                <span className="text-xs font-medium text-zinc-200 truncate max-w-[140px]">
-                  {user.email}
-                </span>
-              </div>
-              <Badge variant={getRoleBadgeVariant(user.role)}>
-                {user.role}
-              </Badge>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={logout}
-                className="h-8 px-2 text-zinc-400 hover:text-zinc-100"
-                title="Log out"
-              >
-                <LogOut className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-zinc-800">
+              <span className="hidden xl:inline text-xs font-mono text-zinc-300 truncate max-w-[180px]">{user.email}</span>
+              <Badge variant={roleVariant}>{user.role}</Badge>
+              <Button variant="ghost" size="icon" onClick={logout} aria-label="Log out" title="Log out">
+                <LogOut className="h-4 w-4" aria-hidden="true" />
               </Button>
             </div>
           )}
+
+          <Button aria-label="Close"
+            variant="outline"
+            size="icon"
+            className="lg:hidden"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            onClick={() => setMenuOpen((o) => !o)}
+          >
+            {menuOpen ? <X className="h-4 w-4" aria-hidden="true" /> : <Menu className="h-4 w-4" aria-hidden="true" />}
+          </Button>
         </div>
       </div>
+
+      {/* Mobile / tablet menu */}
+      {menuOpen && (
+        <div id="mobile-menu" className="lg:hidden border-t border-zinc-800 bg-zinc-900">
+          <nav aria-label="Mobile" className="max-w-[1400px] mx-auto p-2 flex flex-col">
+            {tabs.filter((t) => t.show).map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => choose(t.id)}
+                aria-current={currentTab === t.id ? 'page' : undefined}
+                className={`flex items-center gap-3 min-h-12 px-3 text-sm cursor-pointer border-l-4 text-left ${
+                  currentTab === t.id ? 'border-accent bg-zinc-800 text-zinc-100' : 'border-transparent text-zinc-300 hover:bg-zinc-800'
+                }`}
+              >
+                {t.icon}
+                {t.label}
+              </button>
+            ))}
+            <div className="md:hidden p-3 flex items-center justify-between border-t border-zinc-800 mt-2">
+              <span className="text-xs text-zinc-400">Theme</span>
+              <ThemeToggle />
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 };

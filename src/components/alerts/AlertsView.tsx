@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Select } from '../ui/select.tsx';
+import { SeverityBadge } from '../ui/severity-badge.tsx';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { useRealtime } from '../../context/RealtimeContext.tsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card.tsx';
@@ -157,19 +159,7 @@ export const AlertsView: React.FC = () => {
     setPage(1);
   };
 
-  const getSeverityBadge = (severity: string) => {
-    switch (severity) {
-      case 'CRITICAL':
-        return <Badge variant="destructive">CRITICAL</Badge>;
-      case 'HIGH':
-        return <Badge variant="destructive">HIGH</Badge>;
-      case 'MEDIUM':
-        return <Badge variant="warning">MEDIUM</Badge>;
-      case 'LOW':
-      default:
-        return <Badge variant="info">LOW</Badge>;
-    }
-  };
+  const getSeverityBadge = (sev: string) => <SeverityBadge severity={sev} />;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -248,38 +238,38 @@ export const AlertsView: React.FC = () => {
 
             {/* Status Selector */}
             <div>
-              <select
+              <Select
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
                   setPage(1);
                 }}
-                className="w-full h-9 rounded-md border border-zinc-700 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-200 font-mono focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                className="w-full"
               >
                 <option value="">All Statuses</option>
                 <option value="NEW">NEW</option>
                 <option value="IN_PROGRESS">IN_PROGRESS</option>
                 <option value="RESOLVED">RESOLVED</option>
                 <option value="DISMISSED">DISMISSED</option>
-              </select>
+              </Select>
             </div>
 
             {/* Severity Selector */}
             <div>
-              <select
+              <Select
                 value={severityFilter}
                 onChange={(e) => {
                   setSeverityFilter(e.target.value);
                   setPage(1);
                 }}
-                className="w-full h-9 rounded-md border border-zinc-700 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-200 font-mono focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                className="w-full"
               >
                 <option value="">All Severities</option>
                 <option value="CRITICAL">CRITICAL</option>
                 <option value="HIGH">HIGH</option>
                 <option value="MEDIUM">MEDIUM</option>
                 <option value="LOW">LOW</option>
-              </select>
+              </Select>
             </div>
 
             {/* Reset */}
@@ -310,18 +300,18 @@ export const AlertsView: React.FC = () => {
       {/* Alerts Table */}
       <Card>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          <div className="overflow-auto max-h-[70vh]">
             <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-zinc-800 bg-zinc-900/60 text-zinc-400 font-mono text-[11px] uppercase tracking-wider">
-                  <th className="py-3 px-4">Severity</th>
-                  <th className="py-3 px-3">Status</th>
-                  <th className="py-3 px-3">SID</th>
-                  <th className="py-3 px-4">Alert Title</th>
-                  <th className="py-3 px-4">Traffic Vector (Src &rarr; Dst)</th>
-                  <th className="py-3 px-4">Detected</th>
-                  <th className="py-3 px-4 text-right">Quick Triage</th>
-                  <th className="py-3 px-3 text-right">Detail</th>
+              <thead className="sticky top-0 z-10 bg-zinc-900">
+                <tr className="border-b-2 border-zinc-800 bg-zinc-900 text-zinc-400 font-mono text-xs uppercase tracking-wider">
+                  <th scope="col" className="py-3 px-4">Severity</th>
+                  <th scope="col" className="py-3 px-3">Status</th>
+                  <th scope="col" className="py-3 px-3">SID</th>
+                  <th scope="col" className="py-3 px-4">Alert Title</th>
+                  <th scope="col" className="py-3 px-4">Traffic Vector (Src &rarr; Dst)</th>
+                  <th scope="col" className="py-3 px-4">Detected</th>
+                  <th scope="col" className="py-3 px-4 text-right">Quick Triage</th>
+                  <th scope="col" className="py-3 px-3 text-right">Detail</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/80">
@@ -357,17 +347,17 @@ export const AlertsView: React.FC = () => {
                           {alertItem.title}
                         </div>
                         {alertItem.description && (
-                          <div className="text-[11px] text-zinc-500 truncate">
+                          <div className="text-xs text-zinc-500 truncate">
                             {alertItem.description}
                           </div>
                         )}
                       </td>
-                      <td className="py-2.5 px-4 font-mono text-[11px] text-zinc-400 whitespace-nowrap">
+                      <td className="py-2.5 px-4 font-mono text-xs text-zinc-400 whitespace-nowrap">
                         <span className="text-zinc-300">{alertItem.sourceIp}</span>
                         <span className="text-zinc-600 px-1">&rarr;</span>
                         <span className="text-zinc-300">{alertItem.destinationIp}</span>
                       </td>
-                      <td className="py-2.5 px-4 font-mono text-[11px] text-zinc-500 whitespace-nowrap">
+                      <td className="py-2.5 px-4 font-mono text-xs text-zinc-500 whitespace-nowrap">
                         {new Date(alertItem.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}{' '}
                         <span className="text-zinc-600">{new Date(alertItem.createdAt).toISOString().split('T')[0]}</span>
                       </td>
@@ -379,7 +369,7 @@ export const AlertsView: React.FC = () => {
                                 <button
                                   type="button"
                                   onClick={() => handleStatusChange(alertItem.id, 'IN_PROGRESS')}
-                                  className="px-2 py-0.5 rounded bg-amber-950/60 border border-amber-800/60 text-amber-300 hover:bg-amber-900/80 text-[11px] font-mono cursor-pointer"
+                                  className="px-2 py-0.5 rounded bg-amber-950/60 border border-amber-800/60 text-amber-300 hover:bg-amber-900/80 text-xs font-mono cursor-pointer"
                                   title="Acknowledge & start triage"
                                 >
                                   Ack
@@ -387,7 +377,7 @@ export const AlertsView: React.FC = () => {
                                 <button
                                   type="button"
                                   onClick={() => handleStatusChange(alertItem.id, 'DISMISSED')}
-                                  className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 text-[11px] font-mono cursor-pointer"
+                                  className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 text-xs font-mono cursor-pointer"
                                   title="Dismiss as non-actionable"
                                 >
                                   Dismiss
@@ -398,7 +388,7 @@ export const AlertsView: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() => handleStatusChange(alertItem.id, 'RESOLVED')}
-                                className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-800/60 text-emerald-300 hover:bg-emerald-900/80 text-[11px] font-mono cursor-pointer"
+                                className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-800/60 text-emerald-300 hover:bg-emerald-900/80 text-xs font-mono cursor-pointer"
                                 title="Mark alert resolved"
                               >
                                 Resolve
@@ -408,7 +398,7 @@ export const AlertsView: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() => handleStatusChange(alertItem.id, 'IN_PROGRESS')}
-                                className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 text-[11px] font-mono cursor-pointer"
+                                className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 text-xs font-mono cursor-pointer"
                                 title="Reopen alert"
                               >
                                 Reopen
@@ -416,7 +406,7 @@ export const AlertsView: React.FC = () => {
                             )}
                           </div>
                         ) : (
-                          <span className="text-[11px] text-zinc-600 font-mono">View Only</span>
+                          <span className="text-xs text-zinc-600 font-mono">View Only</span>
                         )}
                       </td>
                       <td className="py-2.5 px-3 text-right whitespace-nowrap">
@@ -446,18 +436,18 @@ export const AlertsView: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <select
+              <Select
                 value={limit}
                 onChange={(e) => {
                   setLimit(Number(e.target.value));
                   setPage(1);
                 }}
-                className="h-8 rounded border border-zinc-800 bg-zinc-900 px-2 text-xs font-mono text-zinc-300 focus:outline-none"
+                
               >
                 <option value="10">10 / page</option>
                 <option value="20">20 / page</option>
                 <option value="50">50 / page</option>
-              </select>
+              </Select>
 
               <div className="flex items-center space-x-1">
                 <Button

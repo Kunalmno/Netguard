@@ -70,7 +70,7 @@ export const AuthView: React.FC = () => {
         </div>
 
         {/* Auth Card */}
-        <Card className="border-zinc-800 bg-zinc-900/40 shadow-xl backdrop-blur-md">
+        <Card className="border-zinc-800 bg-zinc-900/40 shadow-xl">
           <CardHeader className="space-y-1 pb-4">
             <div className="flex rounded-md bg-zinc-900 p-1 border border-zinc-800">
               <button
@@ -116,12 +116,13 @@ export const AuthView: React.FC = () => {
               )}
 
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-zinc-300 flex items-center gap-1.5">
+                <label htmlFor="authview-f1" className="text-xs font-medium text-zinc-300 flex items-center gap-1.5">
                   <Mail className="h-3.5 w-3.5 text-zinc-500" />
                   Operator Email
                 </label>
-                <Input
+                <Input id="authview-f1"
                   type="email"
+                  autoComplete="email"
                   placeholder="analyst@netguard.local"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -132,12 +133,13 @@ export const AuthView: React.FC = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-zinc-300 flex items-center gap-1.5">
+                <label htmlFor="authview-f2" className="text-xs font-medium text-zinc-300 flex items-center gap-1.5">
                   <Lock className="h-3.5 w-3.5 text-zinc-500" />
                   Password
                 </label>
-                <Input
+                <Input id="authview-f2"
                   type="password"
+                  autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
                   placeholder="••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -146,7 +148,7 @@ export const AuthView: React.FC = () => {
                   className="text-xs"
                 />
                 {mode === 'register' && (
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="text-xs text-zinc-500">
                     Must be at least 8 characters in length.
                   </p>
                 )}
@@ -173,7 +175,7 @@ export const AuthView: React.FC = () => {
               </Button>
 
               {/* Quick pre-fill helpers for demo evaluation */}
-              <div className="w-full pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400">
+              <div className="w-full pt-2 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400">
                 <span className="flex items-center gap-1 text-zinc-500">
                   <Sparkles className="h-3 w-3" /> Quick fill:
                 </span>

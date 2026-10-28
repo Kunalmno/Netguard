@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { Select } from '../ui/select.tsx';
+import { Textarea } from '../ui/textarea.tsx';
+import { Modal } from '../ui/modal.tsx';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { Button } from '../ui/button.tsx';
 import { Input } from '../ui/input.tsx';
@@ -122,8 +125,7 @@ export const IngestAlertModal: React.FC<IngestAlertModalProps> = ({ isOpen, onCl
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl text-zinc-100 max-h-[90vh] overflow-y-auto">
+    <Modal onClose={onClose} label={"Ingest alert"} widthClass="max-w-xl">
         {/* Header */}
         <div className="flex items-start justify-between pb-3 border-b border-zinc-800">
           <div>
@@ -135,7 +137,7 @@ export const IngestAlertModal: React.FC<IngestAlertModalProps> = ({ isOpen, onCl
               Inject validated Snort alert data into NetGuard's telemetry management stream.
             </p>
           </div>
-          <Button
+          <Button aria-label="Close"
             variant="ghost"
             size="icon"
             onClick={onClose}
@@ -147,34 +149,34 @@ export const IngestAlertModal: React.FC<IngestAlertModalProps> = ({ isOpen, onCl
 
         {/* Presets Toolbar */}
         <div className="py-3 border-b border-zinc-800/80 flex items-center gap-1.5 flex-wrap text-xs">
-          <span className="text-[11px] font-mono text-zinc-400 flex items-center gap-1">
+          <span className="text-xs font-mono text-zinc-400 flex items-center gap-1">
             <Wand2 className="h-3 w-3 text-zinc-400" /> Presets:
           </span>
           <button
             type="button"
             onClick={() => handleApplyPreset('ssh')}
-            className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[11px] hover:bg-zinc-800 font-mono"
+            className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-xs hover:bg-zinc-800 font-mono"
           >
             SSH Scan
           </button>
           <button
             type="button"
             onClick={() => handleApplyPreset('sqli')}
-            className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[11px] hover:bg-zinc-800 font-mono text-red-300"
+            className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-xs hover:bg-zinc-800 font-mono text-red-300"
           >
             SQLi Probe
           </button>
           <button
             type="button"
             onClick={() => handleApplyPreset('priv')}
-            className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[11px] hover:bg-zinc-800 font-mono text-amber-300"
+            className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-xs hover:bg-zinc-800 font-mono text-amber-300"
           >
             Root Privilege
           </button>
           <button
             type="button"
             onClick={() => handleApplyPreset('dns')}
-            className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[11px] hover:bg-zinc-800 font-mono text-sky-300"
+            className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-xs hover:bg-zinc-800 font-mono text-sky-300"
           >
             DNS C2
           </button>
@@ -190,8 +192,8 @@ export const IngestAlertModal: React.FC<IngestAlertModalProps> = ({ isOpen, onCl
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[11px] font-mono text-zinc-400">Signature ID (SID)*</label>
-              <Input
+              <label htmlFor="ingestalertmodal-f1" className="text-xs font-mono text-zinc-400">Signature ID (SID)*</label>
+              <Input id="ingestalertmodal-f1"
                 type="number"
                 value={signatureId}
                 onChange={(e) => setSignatureId(e.target.value)}
@@ -200,23 +202,23 @@ export const IngestAlertModal: React.FC<IngestAlertModalProps> = ({ isOpen, onCl
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[11px] font-mono text-zinc-400">Severity Priority*</label>
-              <select
+              <label htmlFor="ingestalertmodal-f2" className="text-xs font-mono text-zinc-400">Severity Priority*</label>
+              <Select id="ingestalertmodal-f2"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="w-full h-9 rounded-md border border-zinc-700 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-100 font-mono focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                className="w-full"
               >
                 <option value="1">1 - High Severity</option>
                 <option value="2">2 - Medium Severity</option>
                 <option value="3">3 - Low Severity</option>
                 <option value="4">4 - Informational</option>
-              </select>
+              </Select>
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-[11px] font-mono text-zinc-400">Signature Message*</label>
-            <Input
+            <label htmlFor="ingestalertmodal-f3" className="text-xs font-mono text-zinc-400">Signature Message*</label>
+            <Input id="ingestalertmodal-f3"
               value={signatureMessage}
               onChange={(e) => setSignatureMessage(e.target.value)}
               required
@@ -226,33 +228,33 @@ export const IngestAlertModal: React.FC<IngestAlertModalProps> = ({ isOpen, onCl
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[11px] font-mono text-zinc-400">Classification</label>
-              <Input
+              <label htmlFor="ingestalertmodal-f4" className="text-xs font-mono text-zinc-400">Classification</label>
+              <Input id="ingestalertmodal-f4"
                 value={classification}
                 onChange={(e) => setClassification(e.target.value)}
                 className="text-xs"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[11px] font-mono text-zinc-400">Protocol*</label>
-              <select
+              <label htmlFor="ingestalertmodal-f5" className="text-xs font-mono text-zinc-400">Protocol*</label>
+              <Select id="ingestalertmodal-f5"
                 value={protocol}
                 onChange={(e) => setProtocol(e.target.value)}
-                className="w-full h-9 rounded-md border border-zinc-700 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-100 font-mono focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                className="w-full"
               >
                 <option value="TCP">TCP</option>
                 <option value="UDP">UDP</option>
                 <option value="ICMP">ICMP</option>
                 <option value="IP">IP</option>
-              </select>
+              </Select>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[11px] font-mono text-zinc-400">Source IP* & Port</label>
+              <label htmlFor="ingestalertmodal-f6" className="text-xs font-mono text-zinc-400">Source IP* & Port</label>
               <div className="flex gap-2">
-                <Input
+                <Input id="ingestalertmodal-f6"
                   value={sourceIp}
                   onChange={(e) => setSourceIp(e.target.value)}
                   placeholder="192.168.1.100"
@@ -270,9 +272,9 @@ export const IngestAlertModal: React.FC<IngestAlertModalProps> = ({ isOpen, onCl
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] font-mono text-zinc-400">Destination IP* & Port</label>
+              <label htmlFor="ingestalertmodal-f7" className="text-xs font-mono text-zinc-400">Destination IP* & Port</label>
               <div className="flex gap-2">
-                <Input
+                <Input id="ingestalertmodal-f7"
                   value={destinationIp}
                   onChange={(e) => setDestinationIp(e.target.value)}
                   placeholder="10.0.0.1"
@@ -291,12 +293,12 @@ export const IngestAlertModal: React.FC<IngestAlertModalProps> = ({ isOpen, onCl
           </div>
 
           <div className="space-y-1">
-            <label className="text-[11px] font-mono text-zinc-400">Raw Packet Payload Snippet</label>
-            <textarea
+            <label htmlFor="ingestalertmodal-f8" className="text-xs font-mono text-zinc-400">Raw Packet Payload Snippet</label>
+            <Textarea id="ingestalertmodal-f8"
               value={rawPayload}
               onChange={(e) => setRawPayload(e.target.value)}
               rows={2}
-              className="w-full rounded-md border border-zinc-700 bg-zinc-900/60 p-2 text-xs text-zinc-100 font-mono focus:outline-none focus:ring-1 focus:ring-zinc-400"
+              className="w-full"
               placeholder="Packet data or header text..."
             />
           </div>
@@ -311,7 +313,6 @@ export const IngestAlertModal: React.FC<IngestAlertModalProps> = ({ isOpen, onCl
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 };

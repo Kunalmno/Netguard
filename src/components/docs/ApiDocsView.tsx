@@ -56,7 +56,7 @@ export const ApiDocsView: React.FC = () => {
                 <span className="text-zinc-300">/api/auth/register</span>
                 <Badge variant="outline">PUBLIC</Badge>
               </div>
-              <p className="text-[11px] text-zinc-500 font-sans">First registrant becomes ADMIN; others default to VIEWER.</p>
+              <p className="text-xs text-zinc-500 font-sans">First registrant becomes ADMIN; others default to VIEWER.</p>
             </div>
 
             <div className="p-2.5 rounded bg-zinc-900/80 border border-zinc-800 space-y-1">
@@ -65,7 +65,7 @@ export const ApiDocsView: React.FC = () => {
                 <span className="text-zinc-300">/api/auth/login</span>
                 <Badge variant="outline">PUBLIC</Badge>
               </div>
-              <p className="text-[11px] text-zinc-500 font-sans">Returns 24h JWT token and user profile.</p>
+              <p className="text-xs text-zinc-500 font-sans">Returns 24h JWT token and user profile.</p>
             </div>
 
             <div className="p-2.5 rounded bg-zinc-900/80 border border-zinc-800 space-y-1">
@@ -111,7 +111,7 @@ export const ApiDocsView: React.FC = () => {
                 <span className="text-zinc-300">/api/events/ingest</span>
                 <Badge variant="info">ADMIN / ANALYST / API-KEY</Badge>
               </div>
-              <p className="text-[11px] text-zinc-500 font-sans">
+              <p className="text-xs text-zinc-500 font-sans">
                 Accepts single or batch Snort alert logs with signature, priority, and IP/port telemetry.
               </p>
             </div>
@@ -122,7 +122,7 @@ export const ApiDocsView: React.FC = () => {
                 <span className="text-zinc-300">/api/events</span>
                 <Badge variant="secondary">ALL ROLES</Badge>
               </div>
-              <p className="text-[11px] text-zinc-500 font-sans">
+              <p className="text-xs text-zinc-500 font-sans">
                 Paginated query with priority, protocol, IP, date range, and text search filters.
               </p>
             </div>
@@ -133,7 +133,7 @@ export const ApiDocsView: React.FC = () => {
                 <span className="text-zinc-300">/api/events/stats</span>
                 <Badge variant="secondary">ALL ROLES</Badge>
               </div>
-              <p className="text-[11px] text-zinc-500 font-sans">
+              <p className="text-xs text-zinc-500 font-sans">
                 Aggregates total alert volume, priority distribution, and protocol counts.
               </p>
             </div>
@@ -151,7 +151,7 @@ export const ApiDocsView: React.FC = () => {
 
       <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-4">
         <h3 className="text-xs font-semibold text-zinc-300 mb-2 font-mono">Sample Snort Alert Ingestion Payload (JSON)</h3>
-        <pre className="text-[11px] font-mono text-zinc-400 bg-zinc-900/70 p-3 rounded overflow-x-auto border border-zinc-800">
+        <pre className="text-xs font-mono text-zinc-400 bg-zinc-900/70 p-3 rounded overflow-x-auto border border-zinc-800">
 {`{
   "signatureId": 2001219,
   "generatorId": 1,
