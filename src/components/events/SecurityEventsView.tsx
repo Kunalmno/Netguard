@@ -1,24 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Select } from '../ui/select.tsx';
 import { useAuth } from '../../context/AuthContext.tsx';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card.tsx';
-import { Badge } from '../ui/badge.tsx';
+import { Card, CardContent } from '../ui/card.tsx';
+import { PriorityTag } from '../ui/tags.tsx';
 import { Button } from '../ui/button.tsx';
 import { Input } from '../ui/input.tsx';
 import { EventDetailModal } from './EventDetailModal.tsx';
 import { IngestAlertModal } from './IngestAlertModal.tsx';
-import {
-  ShieldAlert,
-  Search,
-  Filter,
-  PlusCircle,
-  RefreshCw,
-  Eye,
-  ChevronLeft,
-  ChevronRight,
-  RotateCcw,
-  Network,
-} from 'lucide-react';
+import { Search, Filter, PlusCircle, RefreshCw, Eye, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+import { Select } from '../ui/select.tsx';
+import { Table } from '../ui/table.tsx';
+import { PageHeader } from '../ui/page-header.tsx';
 
 export const SecurityEventsView: React.FC = () => {
   const { token, user } = useAuth();
@@ -93,43 +84,24 @@ export const SecurityEventsView: React.FC = () => {
     setPage(1);
   };
 
-  const getPriorityBadge = (priority: number) => {
-    switch (priority) {
-      case 1:
-        return <Badge variant="destructive">HIGH (1)</Badge>;
-      case 2:
-        return <Badge variant="warning">MED (2)</Badge>;
-      case 3:
-        return <Badge variant="info">LOW (3)</Badge>;
-      default:
-        return <Badge variant="secondary">INFO ({priority})</Badge>;
-    }
-  };
+  const getPriorityBadge = (s: number) => <PriorityTag priority={s} />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-zinc-800">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-zinc-100 flex items-center gap-2">
-            <ShieldAlert className="h-5 w-5 text-amber-400" />
-            Security Telemetry Explorer
-          </h1>
-          <p className="text-xs text-zinc-400 font-mono">
-            Boundary: Snort detects. NetGuard manages. &bull; Total records: {totalCount}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Security events"
+        description={<>{totalCount} records from Snort</>}
+        actions={<>
           <Button
             variant="outline"
             size="sm"
             onClick={fetchEvents}
             disabled={loading}
-            className="text-xs flex items-center gap-1.5 border-zinc-700 bg-zinc-900/60"
+            className="text-body flex items-center gap-2 border-white/10"
             title="Refresh stream"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} strokeWidth={1.5} />
             <span>Refresh</span>
           </Button>
 
@@ -137,30 +109,30 @@ export const SecurityEventsView: React.FC = () => {
             <Button
               size="sm"
               onClick={() => setIsIngestOpen(true)}
-              className="text-xs flex items-center gap-1.5"
+              className="text-body flex items-center gap-2"
             >
-              <PlusCircle className="h-3.5 w-3.5" />
-              <span>Ingest Alert</span>
+              <PlusCircle className="h-4 w-4" strokeWidth={1.5} />
+              <span>Ingest alert</span>
             </Button>
           )}
-        </div>
-      </div>
+        </>}
+      />
 
       {/* Filter Toolbar */}
-      <Card className="bg-zinc-900/30">
+      <Card>
         <CardContent className="p-4 space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             {/* Search */}
             <div className="relative lg:col-span-2">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-zinc-500" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
               <Input
-                placeholder="Search signature message or classification..."
+                placeholder="Search signature message or classification"
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className="pl-8 text-xs font-mono"
+                className="pl-9 text-body font-mono"
               />
             </div>
 
@@ -174,7 +146,7 @@ export const SecurityEventsView: React.FC = () => {
                 }}
                 className="w-full"
               >
-                <option value="">All Severities</option>
+                <option value="">All severities</option>
                 <option value="1">Priority 1 (High)</option>
                 <option value="2">Priority 2 (Medium)</option>
                 <option value="3">Priority 3 (Low)</option>
@@ -192,11 +164,11 @@ export const SecurityEventsView: React.FC = () => {
                 }}
                 className="w-full"
               >
-                <option value="">All Protocols</option>
-                <option value="TCP">TCP</option>
-                <option value="UDP">UDP</option>
-                <option value="ICMP">ICMP</option>
-                <option value="IP">IP</option>
+                <option value="">All protocols</option>
+                <option value="TCP">Tcp</option>
+                <option value="UDP">Udp</option>
+                <option value="ICMP">Icmp</option>
+                <option value="IP">Ip</option>
               </Select>
             </div>
 
@@ -209,7 +181,7 @@ export const SecurityEventsView: React.FC = () => {
                   setSourceIpFilter(e.target.value);
                   setPage(1);
                 }}
-                className="text-xs font-mono"
+                className="text-body font-mono"
               />
               <Button
                 variant="outline"
@@ -218,7 +190,7 @@ export const SecurityEventsView: React.FC = () => {
                 className="shrink-0 h-9 w-9 text-zinc-400 hover:text-zinc-100"
                 title="Reset filters"
               >
-                <RotateCcw className="h-3.5 w-3.5" />
+                <RotateCcw className="h-4 w-4" strokeWidth={1.5} />
               </Button>
             </div>
           </div>
@@ -228,24 +200,24 @@ export const SecurityEventsView: React.FC = () => {
       {/* Events Table */}
       <Card>
         <CardContent className="p-0">
-          <div className="overflow-auto max-h-[70vh]">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead className="sticky top-0 z-10 bg-zinc-900">
-                <tr className="border-b-2 border-zinc-800 bg-zinc-900 text-zinc-400 font-mono text-xs uppercase tracking-wider">
-                  <th scope="col" className="py-3 px-4">Severity</th>
-                  <th scope="col" className="py-3 px-3">SID</th>
-                  <th scope="col" className="py-3 px-4">Signature Message</th>
-                  <th scope="col" className="py-3 px-3">Proto</th>
-                  <th scope="col" className="py-3 px-4">Traffic Vector (Src &rarr; Dst)</th>
-                  <th scope="col" className="py-3 px-4">Timestamp (UTC)</th>
-                  <th scope="col" className="py-3 px-3 text-right">Action</th>
+          <div className="overflow-x-auto">
+            <Table>
+              <thead>
+                <tr>
+                  <th className="py-3 px-4">Severity</th>
+                  <th className="py-3 px-3">SID</th>
+                  <th className="py-3 px-4">Signature message</th>
+                  <th className="py-3 px-3">Proto</th>
+                  <th className="py-3 px-4">Source &rarr; destination</th>
+                  <th className="py-3 px-4">Timestamp (UTC)</th>
+                  <th className="py-3 px-3 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/80">
                 {loading ? (
                   <tr>
                     <td colSpan={7} className="py-12 text-center text-zinc-500 font-mono">
-                      Querying security events database...
+                      Querying security events database
                     </td>
                   </tr>
                 ) : events.length === 0 ? (
@@ -256,9 +228,9 @@ export const SecurityEventsView: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={handleResetFilters}
-                        className="text-xs"
+                        className="text-body"
                       >
-                        Clear Filters
+                        Clear filters
                       </Button>
                     </td>
                   </tr>
@@ -268,13 +240,13 @@ export const SecurityEventsView: React.FC = () => {
                       key={ev.id}
                       className="hover:bg-zinc-900/50 transition-colors group"
                     >
-                      <td className="py-2.5 px-4 whitespace-nowrap">
+                      <td className="py-3 px-4 whitespace-nowrap">
                         {getPriorityBadge(ev.priority)}
                       </td>
-                      <td className="py-2.5 px-3 font-mono font-bold text-zinc-300 whitespace-nowrap">
+                      <td className="py-3 px-3 font-mono font-medium text-zinc-300 whitespace-nowrap">
                         {ev.signatureId}
                       </td>
-                      <td className="py-2.5 px-4 max-w-xs sm:max-w-md">
+                      <td className="py-3 px-4 max-w-xs sm:max-w-md">
                         <div className="font-medium text-zinc-200 truncate">
                           {ev.signatureMessage}
                         </div>
@@ -284,11 +256,11 @@ export const SecurityEventsView: React.FC = () => {
                           </div>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 font-mono text-sky-400 font-semibold whitespace-nowrap">
+                      <td className="py-3 px-3 font-mono text-sky-400 font-medium whitespace-nowrap">
                         {ev.protocol}
                       </td>
-                      <td className="py-2.5 px-4 font-mono text-xs text-zinc-400 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5">
+                      <td className="py-3 px-4 font-mono text-xs text-zinc-400 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
                           <span className="text-zinc-300">
                             {ev.sourceIp}{ev.sourcePort !== null ? `:${ev.sourcePort}` : ''}
                           </span>
@@ -298,18 +270,18 @@ export const SecurityEventsView: React.FC = () => {
                           </span>
                         </div>
                       </td>
-                      <td className="py-2.5 px-4 font-mono text-xs text-zinc-500 whitespace-nowrap">
+                      <td className="py-3 px-4 font-mono text-xs text-zinc-500 whitespace-nowrap">
                         {new Date(ev.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}{' '}
                         <span className="text-zinc-600">{new Date(ev.timestamp).toISOString().split('T')[0]}</span>
                       </td>
-                      <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                      <td className="py-3 px-3 text-right whitespace-nowrap">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedEvent(ev)}
-                          className="h-7 px-2.5 text-xs text-zinc-400 hover:text-zinc-100 flex items-center gap-1"
+                          className="h-7 px-3 text-body text-zinc-400 hover:text-zinc-100 flex items-center gap-1"
                         >
-                          <Eye className="h-3.5 w-3.5" />
+                          <Eye className="h-4 w-4" strokeWidth={1.5} />
                           <span>Inspect</span>
                         </Button>
                       </td>
@@ -317,11 +289,11 @@ export const SecurityEventsView: React.FC = () => {
                   ))
                 )}
               </tbody>
-            </table>
+            </Table>
           </div>
 
           {/* Pagination Controls */}
-          <div className="p-4 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400">
+          <div className="p-4 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-body text-zinc-400">
             <div className="flex items-center gap-2">
               <span>Showing page {page} of {totalPages || 1}</span>
               <span className="text-zinc-600">&bull;</span>
@@ -335,7 +307,7 @@ export const SecurityEventsView: React.FC = () => {
                   setLimit(Number(e.target.value));
                   setPage(1);
                 }}
-                
+                className="h-8 rounded border border-zinc-800 bg-zinc-900 px-2 text-body font-mono text-zinc-300"
               >
                 <option value="10">10 / page</option>
                 <option value="20">20 / page</option>
@@ -350,7 +322,7 @@ export const SecurityEventsView: React.FC = () => {
                   disabled={page <= 1}
                   className="h-8 px-2"
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" />
+                  <ChevronLeft className="h-4 w-4" strokeWidth={1.5} />
                 </Button>
                 <Button
                   variant="outline"
@@ -359,7 +331,7 @@ export const SecurityEventsView: React.FC = () => {
                   disabled={page >= totalPages}
                   className="h-8 px-2"
                 >
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  <ChevronRight className="h-4 w-4" strokeWidth={1.5} />
                 </Button>
               </div>
             </div>

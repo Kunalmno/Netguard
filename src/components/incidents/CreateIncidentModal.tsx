@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Select } from '../ui/select.tsx';
-import { Textarea } from '../ui/textarea.tsx';
-import { Modal } from '../ui/modal.tsx';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { Button } from '../ui/button.tsx';
 import { Input } from '../ui/input.tsx';
 import { Alert } from '../ui/alert.tsx';
-import { X, Plus, AlertCircle, ShieldAlert } from 'lucide-react';
+import { X, AlertCircle, ShieldAlert } from 'lucide-react';
+import { Select } from '../ui/select.tsx';
+import { Modal } from '../ui/modal.tsx';
 import type { IncidentSeverity } from '../../db/schema.ts';
 
 export interface CreateIncidentModalProps {
@@ -109,88 +108,88 @@ export const CreateIncidentModal: React.FC<CreateIncidentModalProps> = ({ isOpen
   };
 
   return (
-    <Modal onClose={onClose} label={"Declare incident"} widthClass="max-w-xl">
+    <Modal size="xl" onClose={onClose}>
         {/* Header */}
         <div className="flex items-start justify-between pb-3 border-b border-zinc-800">
           <div>
-            <h2 className="text-base font-bold text-zinc-100 flex items-center gap-2">
-              <ShieldAlert className="h-5 w-5 text-red-400" />
-              Declare New Security Incident
+            <h2 className="text-base font-medium text-zinc-100 flex items-center gap-2">
+              <ShieldAlert className="h-4 w-4 text-zinc-400" strokeWidth={1.5} />
+              Declare new security incident
             </h2>
-            <p className="text-xs text-zinc-400">
+            <p className="text-body text-zinc-400">
               Establish a coordinated operational incident case for investigation & containment.
             </p>
           </div>
-          <Button aria-label="Close"
+          <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
             className="h-8 w-8 text-zinc-400 hover:text-zinc-100 -mr-2 -mt-2"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4" strokeWidth={1.5} />
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4 text-xs">
+        <form onSubmit={handleSubmit} className="space-y-4 pt-4 text-body">
           {error && (
-            <Alert variant="destructive" className="py-2.5 text-xs flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
+            <Alert variant="destructive" className="py-3 text-body flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0 text-red-400" strokeWidth={1.5} />
               <span>{error}</span>
             </Alert>
           )}
 
-          <div className="space-y-1.5">
-            <label htmlFor="createincidentmodal-f1" className="text-xs font-mono text-zinc-300">Incident Title*</label>
-            <Input id="createincidentmodal-f1"
+          <div className="space-y-2">
+            <label className="text-xs font-mono text-zinc-300">Incident Title*</label>
+            <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. INC-204: Multiple SQL Injection Attempts on Production DB"
               required
-              className="text-xs"
+              className="text-body"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label htmlFor="createincidentmodal-f2" className="text-xs font-mono text-zinc-300">Severity Level*</label>
-              <Select id="createincidentmodal-f2"
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-zinc-300">Severity Level*</label>
+              <Select
                 value={severity}
                 onChange={(e) => setSeverity(e.target.value as IncidentSeverity)}
                 className="w-full"
               >
-                <option value="SEV1">SEV1 - Critical (Immediate Threat/Exploit)</option>
-                <option value="SEV2">SEV2 - High (Active Probe/Unauthorized Action)</option>
-                <option value="SEV3">SEV3 - Medium (Suspicious Pattern)</option>
-                <option value="SEV4">SEV4 - Low (Policy Violation/Triage)</option>
+                <option value="SEV1">SEV1 - critical (Immediate threat/Exploit)</option>
+                <option value="SEV2">SEV2 - high (Active probe/Unauthorized action)</option>
+                <option value="SEV3">SEV3 - medium (Suspicious pattern)</option>
+                <option value="SEV4">SEV4 - low (Policy violation/Triage)</option>
               </Select>
             </div>
 
-            <div className="space-y-1.5">
-              <label htmlFor="createincidentmodal-f3" className="text-xs font-mono text-zinc-300">Assign Lead Investigator</label>
-              <Select id="createincidentmodal-f3"
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-zinc-300">Assign lead investigator</label>
+              <Select
                 value={assignedTo}
                 onChange={(e) => setAssignedTo(e.target.value)}
                 className="w-full"
               >
-                <option value="">Unassigned (Awaiting Triage)</option>
+                <option value="">Unassigned (Awaiting triage)</option>
                 {assignableUsers.map((u) => (
                   <option key={u.id} value={u.id}>
-                    {u.email} ({u.role})
+                    {u.email} ({u.role.charAt(0) + u.role.slice(1).toLowerCase()})
                   </option>
                 ))}
               </Select>
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label htmlFor="createincidentmodal-f4" className="text-xs font-mono text-zinc-300">Scope & Initial Assessment*</label>
-            <Textarea id="createincidentmodal-f4"
+          <div className="space-y-2">
+            <label className="text-xs font-mono text-zinc-300">Scope & Initial Assessment*</label>
+            <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              placeholder="Detail the observed attack surface, affected hosts, and immediate risk..."
+              placeholder="Detail the observed attack surface, affected hosts, and immediate risk"
               required
-              className="w-full"
+              className="w-full rounded-lg border border-white/10 p-3 text-body text-zinc-100"
             />
           </div>
 
@@ -200,7 +199,7 @@ export const CreateIncidentModal: React.FC<CreateIncidentModalProps> = ({ isOpen
               <label className="text-xs font-mono text-zinc-400 block">
                 Attach Correlated Alerts ({selectedAlertIds.length} selected)
               </label>
-              <div className="max-h-36 overflow-y-auto space-y-1 rounded border border-zinc-800 bg-zinc-900/30 p-2">
+              <div className="max-h-36 overflow-y-auto space-y-1 rounded border border-zinc-800 p-2">
                 {availableAlerts.map((al) => {
                   const isChecked = selectedAlertIds.includes(al.id);
                   return (
@@ -208,7 +207,7 @@ export const CreateIncidentModal: React.FC<CreateIncidentModalProps> = ({ isOpen
                       key={al.id}
                       onClick={() => handleToggleAlert(al.id)}
                       className={`p-2 rounded flex items-center justify-between text-xs font-mono cursor-pointer transition-colors ${
-                        isChecked ? 'bg-zinc-800/90 text-zinc-100 border border-zinc-700' : 'hover:bg-zinc-900/60 text-zinc-400'
+                        isChecked ? 'bg-zinc-800/90 text-zinc-100 border border-white/10' : 'hover:bg-zinc-900/60 text-zinc-400'
                       }`}
                     >
                       <div className="flex items-center gap-2 truncate">
@@ -216,13 +215,13 @@ export const CreateIncidentModal: React.FC<CreateIncidentModalProps> = ({ isOpen
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => {}} // handled by parent div
-                          className="rounded border-zinc-700 text-zinc-200"
+                          className="rounded border-white/10 text-zinc-200"
                         />
-                        <span className="font-semibold text-zinc-300">#{al.id}</span>
+                        <span className="font-medium text-zinc-300">#{al.id}</span>
                         <span className="truncate">{al.title}</span>
                       </div>
                       <span className="text-xs text-zinc-500 shrink-0 ml-2">
-                        {al.severity} &bull; {al.sourceIp}
+                        {al.severity.charAt(0) + al.severity.slice(1).toLowerCase()} &bull; {al.sourceIp}
                       </span>
                     </div>
                   );
@@ -233,11 +232,11 @@ export const CreateIncidentModal: React.FC<CreateIncidentModalProps> = ({ isOpen
 
           {/* Footer */}
           <div className="pt-3 border-t border-zinc-800 flex justify-end gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={onClose} className="text-xs">
+            <Button type="button" variant="outline" size="sm" onClick={onClose} className="text-body">
               Cancel
             </Button>
-            <Button type="submit" size="sm" disabled={submitting} className="text-xs">
-              {submitting ? 'Creating Incident...' : 'Declare Incident'}
+            <Button type="submit" size="sm" disabled={submitting} className="text-body">
+              {submitting ? 'Creating incident' : 'Declare incident'}
             </Button>
           </div>
         </form>

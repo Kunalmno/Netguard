@@ -1,25 +1,40 @@
 import React from 'react';
+import { StatusDot, type Tone } from './status-dot.tsx';
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info';
 }
 
-/** Status badge. Always carries a text label; use <SeverityBadge> for severity levels. */
-export function Badge({ className = '', variant = 'default', ...props }: BadgeProps) {
-  const variants = {
-    default: 'bg-zinc-100 text-zinc-900 border border-transparent',
-    secondary: 'bg-zinc-800 text-zinc-200 border border-zinc-600',
-    destructive: 'bg-red-950 text-red-400 border border-red-400/60',
-    success: 'bg-emerald-950 text-emerald-400 border border-emerald-400/60',
-    warning: 'bg-amber-950 text-amber-400 border border-amber-400/60',
-    info: 'bg-sky-950 text-sky-400 border border-sky-400/60',
-    outline: 'text-zinc-300 border border-zinc-700',
-  };
+const variantTone: Record<NonNullable<BadgeProps['variant']>, Tone> = {
+  default: 'neutral',
+  secondary: 'muted',
+  destructive: 'negative',
+  success: 'positive',
+  warning: 'warning',
+  info: 'accent',
+  outline: 'muted',
+};
 
+/** IN_PROGRESS -> In progress, ADMIN -> Admin */
+export function humanize(value: string): string {
+  const spaced = value.replace(/_/g, ' ').trim();
+  if (!spaced) return spaced;
+  // keep short codes such as SEV1, SID, IP and acronyms with digits readable
+  if (/^[A-Z]{2,4}\d+$/.test(spaced)) return spaced;
+  const lower = spaced.toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
+/** A quiet status tag: a dot and sentence-case text, no filled pill. */
+export function Badge({ className = '', variant = 'default', children, ...props }: BadgeProps) {
+  const content = React.Children.map(children, (child) => (typeof child === 'string' ? humanize(child) : child));
   return (
-    <div
-      className={`inline-flex items-center rounded-4xl px-5 py-0.5 text-xs font-semibold font-mono whitespace-nowrap ${variants[variant]} ${className}`}
+    <span
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-medium text-zinc-300 ${className}`}
       {...props}
-    />
+    >
+      <StatusDot tone={variantTone[variant]} />
+      {content}
+    </span>
   );
 }

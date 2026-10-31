@@ -1,25 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Select } from '../ui/select.tsx';
-import { Textarea } from '../ui/textarea.tsx';
-import { Modal } from '../ui/modal.tsx';
-import { SeverityBadge } from '../ui/severity-badge.tsx';
 import { useAuth } from '../../context/AuthContext.tsx';
-import { Badge } from '../ui/badge.tsx';
+import { SeverityTag, StatusTag } from '../ui/tags.tsx';
 import { Button } from '../ui/button.tsx';
-import {
-  X,
-  ShieldAlert,
-  Link as LinkIcon,
-  Unlink,
-  FileCheck,
-  MessageSquare,
-  Terminal,
-  ShieldCheck,
-  Archive,
-  Send,
-  AlertCircle,
-} from 'lucide-react';
-import type { IncidentSeverity, IncidentStatus, InvestigationEntryType } from '../../db/schema.ts';
+import { X, ShieldAlert, Unlink, FileCheck, MessageSquare, Terminal, ShieldCheck, Archive, Send, Link as LinkIcon } from 'lucide-react';
+import { Select } from '../ui/select.tsx';
+import { Modal } from '../ui/modal.tsx';
+import type { IncidentStatus, InvestigationEntryType } from '../../db/schema.ts';
 
 export interface IncidentDetailModalProps {
   incident: any | null;
@@ -123,49 +109,35 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
     }
   };
 
-  const getSeverityBadge = (sev: string) => <SeverityBadge severity={sev} />;
+  const getSeverityBadge = (s: string) => <SeverityTag severity={s} />;
 
-  const getStatusBadge = (status: IncidentStatus) => {
-    switch (status) {
-      case 'OPEN':
-        return <Badge variant="destructive">OPEN</Badge>;
-      case 'INVESTIGATING':
-        return <Badge variant="warning">INVESTIGATING</Badge>;
-      case 'CONTAINED':
-        return <Badge variant="info">CONTAINED</Badge>;
-      case 'RESOLVED':
-        return <Badge variant="success">RESOLVED</Badge>;
-      case 'CLOSED':
-      default:
-        return <Badge variant="secondary">CLOSED</Badge>;
-    }
-  };
+  const getStatusBadge = (s: string) => <StatusTag status={s} />;
 
   const getEntryBadge = (type: InvestigationEntryType) => {
     switch (type) {
       case 'ACTION_TAKEN':
         return (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-sky-950/70 border border-sky-800/60 text-sky-400 text-xs font-mono">
-            <Terminal className="h-3 w-3" /> ACTION
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-sky-950/70 border border-accent/20 text-sky-400 text-xs font-mono">
+            <Terminal className="h-4 w-4" strokeWidth={1.5} /> Action
           </span>
         );
       case 'CONTAINMENT':
         return (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-950/70 border border-amber-800/60 text-amber-400 text-xs font-mono">
-            <ShieldCheck className="h-3 w-3" /> CONTAINMENT
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-950/70 border border-amber-400/20 text-amber-400 text-xs font-mono">
+            <ShieldCheck className="h-4 w-4" strokeWidth={1.5} /> Containment
           </span>
         );
       case 'EVIDENCE':
         return (
           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-950/70 border border-purple-800/60 text-purple-400 text-xs font-mono">
-            <Archive className="h-3 w-3" /> EVIDENCE
+            <Archive className="h-4 w-4" strokeWidth={1.5} /> Evidence
           </span>
         );
       case 'NOTE':
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs font-mono">
-            <MessageSquare className="h-3 w-3" /> NOTE
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-zinc-800 border border-white/10 text-zinc-300 text-xs font-mono">
+            <MessageSquare className="h-4 w-4" strokeWidth={1.5} /> Note
           </span>
         );
     }
@@ -183,37 +155,37 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
   };
 
   return (
-    <Modal onClose={onClose} label={`Incident ${incident.id}`} widthClass="max-w-3xl">
+    <Modal size="3xl" onClose={onClose}>
         {/* Header */}
         <div className="flex items-start justify-between pb-4 border-b border-zinc-800">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <ShieldAlert className="h-5 w-5 text-red-400" />
-              <span className="font-mono text-xs text-zinc-400">INCIDENT #{incident.id}</span>
+              <ShieldAlert className="h-4 w-4 text-zinc-400" strokeWidth={1.5} />
+              <span className="font-mono text-body text-zinc-400">Incident #{incident.id}</span>
               {getSeverityBadge(incident.severity)}
               {getStatusBadge(incident.status)}
             </div>
-            <h2 className="text-base font-bold text-zinc-100 pt-1">
+            <h2 className="text-base font-medium text-zinc-100 pt-1">
               {incident.title}
             </h2>
           </div>
-          <Button aria-label="Close"
+          <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
             className="h-8 w-8 text-zinc-400 hover:text-zinc-100 -mr-2 -mt-2"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4" strokeWidth={1.5} />
           </Button>
         </div>
 
         {/* Content Body */}
-        <div className="py-4 space-y-4 text-xs">
+        <div className="py-4 space-y-4 text-body">
           {/* Metadata Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-zinc-900/40 p-3 rounded-lg border border-zinc-800 font-mono">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-lg border border-zinc-800 font-mono">
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-zinc-500 uppercase block">Assignee</span>
+                <span className="text-xs text-zinc-500 block">Assignee</span>
                 {canManage && onAssign && !isChangingAssignee && (
                   <button
                     type="button"
@@ -233,12 +205,12 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
                       onAssign && onAssign(incident.id, val);
                       setIsChangingAssignee(false);
                     }}
-                    className="w-full"
+                    className="h-6 text-xs bg-zinc-950 border border-white/10 rounded px-1 text-zinc-200 font-mono w-full"
                   >
                     <option value="">Unassigned</option>
                     {eligibleUsers.map((u) => (
                       <option key={u.id} value={u.id}>
-                        {u.email} ({u.role})
+                        {u.email} ({u.role.charAt(0) + u.role.slice(1).toLowerCase()})
                       </option>
                     ))}
                   </Select>
@@ -257,20 +229,20 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
               )}
             </div>
             <div>
-              <span className="text-xs text-zinc-500 uppercase block">Created By</span>
+              <span className="text-xs text-zinc-500 block">Created by</span>
               <span className="text-zinc-300">
                 {incident.creator ? incident.creator.email : 'System/Bootstrap'}
               </span>
             </div>
             <div>
-              <span className="text-xs text-zinc-500 uppercase block">Declared Time</span>
+              <span className="text-xs text-zinc-500 block">Declared time</span>
               <span className="text-zinc-300 font-mono">
                 {new Date(incident.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}{' '}
                 <span className="text-zinc-500">{new Date(incident.createdAt).toISOString().split('T')[0]}</span>
               </span>
             </div>
             <div>
-              <span className="text-xs text-zinc-500 uppercase block">Resolved At</span>
+              <span className="text-xs text-zinc-500 block">Resolved at</span>
               <span className="text-emerald-400 font-mono">
                 {incident.resolvedAt ? new Date(incident.resolvedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Active'}
               </span>
@@ -278,16 +250,16 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
           </div>
 
           {/* Description */}
-          <div className="p-3.5 bg-zinc-900/40 rounded-lg border border-zinc-800 space-y-1">
-            <span className="text-xs text-zinc-500 uppercase font-mono block">Scope & Initial Assessment</span>
+          <div className="p-4 rounded-lg border border-zinc-800 space-y-1">
+            <span className="text-xs text-zinc-500 font-mono block">Scope & initial assessment</span>
             <p className="text-zinc-300 font-medium leading-relaxed">{incident.description}</p>
           </div>
 
           {/* Resolution Summary if present */}
           {incident.resolutionSummary && (
-            <div className="p-3.5 bg-emerald-950/20 rounded-lg border border-emerald-900/40 space-y-1">
-              <span className="text-xs text-emerald-400 uppercase font-mono flex items-center gap-1.5">
-                <FileCheck className="h-3.5 w-3.5" /> Resolution Summary
+            <div className="p-4 bg-emerald-950/20 rounded-lg border border-emerald-400/20 space-y-1">
+              <span className="text-xs text-emerald-400 font-mono flex items-center gap-2">
+                <FileCheck className="h-4 w-4" strokeWidth={1.5} /> Resolution summary
               </span>
               <p className="text-emerald-200 font-medium leading-relaxed">{incident.resolutionSummary}</p>
             </div>
@@ -296,23 +268,23 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
           {/* Linked Alerts Section */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono text-zinc-400 flex items-center gap-1.5">
-                <LinkIcon className="h-3.5 w-3.5 text-zinc-500" />
+              <span className="text-xs font-mono text-zinc-400 flex items-center gap-2">
+                <LinkIcon className="h-4 w-4 text-zinc-500" strokeWidth={1.5} />
                 ASSOCIATED CORRELATED ALERTS ({incident.alerts?.length || 0})
               </span>
             </div>
 
             {(!incident.alerts || incident.alerts.length === 0) ? (
-              <div className="p-3 rounded-lg bg-zinc-900/30 border border-zinc-800/80 text-center text-zinc-500 font-mono text-xs">
+              <div className="p-3 rounded-lg border border-zinc-800/80 text-center text-zinc-500 font-mono text-xs">
                 No alerts currently linked to this incident.
               </div>
             ) : (
-              <div className="divide-y divide-zinc-800/80 rounded-lg border border-zinc-800 bg-zinc-900/30 overflow-hidden">
+              <div className="divide-y divide-zinc-800/80 rounded-lg border border-zinc-800 overflow-hidden">
                 {incident.alerts.map((al: any) => (
-                  <div key={al.id} className="p-2.5 flex items-center justify-between gap-3 text-xs">
+                  <div key={al.id} className="p-3 flex items-center justify-between gap-3 text-body">
                     <div className="space-y-0.5 truncate">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-zinc-400 font-bold">#{al.id}</span>
+                        <span className="font-mono text-zinc-400 font-medium">#{al.id}</span>
                         <span className="font-mono text-xs text-zinc-500">[SID:{al.signatureId}]</span>
                         <span className="font-medium text-zinc-200 truncate">{al.title}</span>
                       </div>
@@ -322,7 +294,7 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="font-mono text-xs text-zinc-400 uppercase">{al.severity}</span>
+                      <span className="font-mono text-xs text-zinc-400">{al.severity}</span>
                       {canManage && (
                         <button
                           type="button"
@@ -330,7 +302,7 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
                           className="p-1 rounded text-zinc-500 hover:text-red-400 hover:bg-zinc-800 transition-colors"
                           title="Unlink alert from this incident"
                         >
-                          <Unlink className="h-3.5 w-3.5" />
+                          <Unlink className="h-4 w-4" strokeWidth={1.5} />
                         </button>
                       )}
                     </div>
@@ -343,18 +315,18 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
           {/* Investigation Findings Timeline */}
           <div className="space-y-3 pt-2 border-t border-zinc-800">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono text-zinc-400 flex items-center gap-1.5">
-                <MessageSquare className="h-3.5 w-3.5 text-zinc-500" />
+              <span className="text-xs font-mono text-zinc-400 flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-zinc-500" strokeWidth={1.5} />
                 INVESTIGATION TIMELINE & FORENSIC FINDINGS ({investigations.length})
               </span>
             </div>
 
             {loadingInv ? (
               <div className="p-4 text-center text-zinc-500 font-mono text-xs">
-                Loading investigation timeline...
+                Loading investigation timeline
               </div>
             ) : investigations.length === 0 ? (
-              <div className="p-4 rounded-lg bg-zinc-900/30 border border-zinc-800/80 text-center text-zinc-500 font-mono text-xs">
+              <div className="p-4 rounded-lg border border-zinc-800/80 text-center text-zinc-500 font-mono text-xs">
                 No investigation findings recorded yet.
               </div>
             ) : (
@@ -362,7 +334,7 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
                 {investigations.map((entry) => (
                   <div
                     key={entry.id}
-                    className="p-3 rounded-lg border border-zinc-800/80 bg-zinc-900/40 space-y-1.5"
+                    className="p-3 rounded-lg border border-zinc-800/80 space-y-2"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
@@ -376,7 +348,7 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
                         {new Date(entry.createdAt).toISOString().split('T')[0]}
                       </span>
                     </div>
-                    <p className="text-zinc-200 text-xs pl-0.5 leading-relaxed font-sans whitespace-pre-wrap">
+                    <p className="text-zinc-200 text-body pl-0.5 leading-relaxed font-sans whitespace-pre-wrap">
                       {entry.content}
                     </p>
                   </div>
@@ -394,30 +366,30 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
                   <Select
                     value={newEntryType}
                     onChange={(e) => setNewEntryType(e.target.value as InvestigationEntryType)}
-                    
+                    className="h-8 rounded border border-white/10 bg-zinc-900 px-2 text-body font-mono text-zinc-200"
                   >
-                    <option value="NOTE">NOTE (General Finding)</option>
-                    <option value="ACTION_TAKEN">ACTION (Remediation Step)</option>
-                    <option value="CONTAINMENT">CONTAINMENT (Host/Net Isolation)</option>
-                    <option value="EVIDENCE">EVIDENCE (Packet/Log Artifact)</option>
+                    <option value="NOTE">Note (General finding)</option>
+                    <option value="ACTION_TAKEN">Action (Remediation step)</option>
+                    <option value="CONTAINMENT">Containment (Host/Net isolation)</option>
+                    <option value="EVIDENCE">Evidence (Packet/Log artifact)</option>
                   </Select>
                 </div>
                 <div className="flex gap-2">
-                  <Textarea
+                  <textarea
                     value={newEntryContent}
                     onChange={(e) => setNewEntryContent(e.target.value)}
-                    placeholder="Record analytical observation, remediation action, or forensic note..."
+                    placeholder="Record analytical observation, remediation action, or forensic note"
                     rows={2}
                     required
-                    
+                    className="flex-1 rounded border border-white/10 bg-zinc-950 p-2 text-body text-zinc-100"
                   />
                   <Button
                     type="submit"
                     size="sm"
                     disabled={submittingEntry || !newEntryContent.trim()}
-                    className="self-end text-xs flex items-center gap-1.5 h-9"
+                    className="self-end text-body flex items-center gap-2 h-9"
                   >
-                    <Send className="h-3.5 w-3.5" />
+                    <Send className="h-4 w-4" strokeWidth={1.5} />
                     <span>Post</span>
                   </Button>
                 </div>
@@ -427,13 +399,13 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
 
           {/* Resolution Prompt Form */}
           {isResolving && (
-            <div className="p-3 bg-zinc-900/80 rounded-lg border border-zinc-700 space-y-2.5">
+            <div className="p-3 bg-zinc-900/80 rounded-lg border border-white/10 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-zinc-200">Incident Resolution Notes</span>
+                <span className="text-body font-medium text-zinc-200">Incident resolution notes</span>
                 <button
                   type="button"
                   onClick={() => setIsResolving(false)}
-                  className="text-zinc-500 hover:text-zinc-300 text-xs"
+                  className="text-zinc-500 hover:text-zinc-300 text-body"
                 >
                   Cancel
                 </button>
@@ -441,27 +413,27 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
               {resolutionError && (
                 <p className="text-red-400 text-xs">{resolutionError}</p>
               )}
-              <Textarea
+              <textarea
                 value={resolutionSummary}
                 onChange={(e) => setResolutionSummary(e.target.value)}
-                placeholder="Detail containment actions taken, root cause findings, and perimeter adjustments..."
+                placeholder="Detail containment actions taken, root cause findings, and perimeter adjustments"
                 rows={2}
-                className="w-full"
+                className="w-full rounded border border-white/10 bg-zinc-950 p-2 text-body text-zinc-100"
               />
               <div className="flex justify-end gap-2">
                 <Button
                   size="sm"
                   onClick={() => handleConfirmResolve('RESOLVED')}
-                  className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="text-body bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
-                  Mark as Resolved
+                  Mark as resolved
                 </Button>
                 <Button
                   size="sm"
                   onClick={() => handleConfirmResolve('CLOSED')}
-                  className="text-xs"
+                  className="text-body"
                 >
-                  Close Incident
+                  Close incident
                 </Button>
               </div>
             </div>
@@ -471,15 +443,15 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
           {canManage && !isResolving && (
             <div className="pt-3 border-t border-zinc-800 flex items-center justify-between flex-wrap gap-2">
               <span className="text-xs font-mono text-zinc-400">Lifecycle State Actions:</span>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 {incident.status === 'OPEN' && (
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => onStatusChange(incident.id, 'INVESTIGATING')}
-                    className="text-xs text-amber-300 hover:text-amber-200"
+                    className="text-body text-amber-300 hover:text-amber-200"
                   >
-                    Start Investigation
+                    Start investigation
                   </Button>
                 )}
 
@@ -489,17 +461,17 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
                       size="sm"
                       variant="outline"
                       onClick={() => onStatusChange(incident.id, 'CONTAINED')}
-                      className="text-xs text-sky-300 hover:text-sky-200"
+                      className="text-body text-sky-300 hover:text-sky-200"
                     >
-                      Mark Contained
+                      Mark contained
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => setIsResolving(true)}
-                      className="text-xs text-emerald-300 hover:text-emerald-200"
+                      className="text-body text-emerald-300 hover:text-emerald-200"
                     >
-                      Resolve Incident
+                      Resolve incident
                     </Button>
                   </>
                 )}
@@ -510,17 +482,17 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
                       size="sm"
                       variant="outline"
                       onClick={() => onStatusChange(incident.id, 'INVESTIGATING')}
-                      className="text-xs text-zinc-300 hover:text-zinc-100"
+                      className="text-body text-zinc-300 hover:text-zinc-100"
                     >
-                      Resume Investigation
+                      Resume investigation
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => setIsResolving(true)}
-                      className="text-xs text-emerald-300 hover:text-emerald-200"
+                      className="text-body text-emerald-300 hover:text-emerald-200"
                     >
-                      Resolve Incident
+                      Resolve incident
                     </Button>
                   </>
                 )}
@@ -531,17 +503,17 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
                       size="sm"
                       variant="outline"
                       onClick={() => onStatusChange(incident.id, 'CLOSED')}
-                      className="text-xs text-zinc-300 hover:text-zinc-100"
+                      className="text-body text-zinc-300 hover:text-zinc-100"
                     >
-                      Close Incident
+                      Close incident
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => onStatusChange(incident.id, 'INVESTIGATING')}
-                      className="text-xs text-amber-400 hover:text-amber-300"
+                      className="text-body text-amber-400 hover:text-amber-300"
                     >
-                      Reopen Incident
+                      Reopen incident
                     </Button>
                   </>
                 )}
@@ -551,9 +523,9 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
                     size="sm"
                     variant="outline"
                     onClick={() => onStatusChange(incident.id, 'INVESTIGATING')}
-                    className="text-xs text-amber-400 hover:text-amber-300"
+                    className="text-body text-amber-400 hover:text-amber-300"
                   >
-                    Reopen Incident
+                    Reopen incident
                   </Button>
                 )}
               </div>
@@ -563,7 +535,7 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
 
         {/* Footer */}
         <div className="pt-3 border-t border-zinc-800 flex justify-end">
-          <Button size="sm" onClick={onClose} className="text-xs">
+          <Button size="sm" onClick={onClose} className="text-body">
             Close
           </Button>
         </div>

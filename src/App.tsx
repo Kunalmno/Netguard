@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext.tsx';
 import { AuthView } from './components/auth/AuthView.tsx';
-import { Navbar, type TabId } from './components/layout/Navbar.tsx';
+import { AppSidebar, type Tab } from './components/layout/AppSidebar.tsx';
 import { SocDashboardView } from './components/dashboard/SocDashboardView.tsx';
 import { SecurityEventsView } from './components/events/SecurityEventsView.tsx';
 import { AlertsView } from './components/alerts/AlertsView.tsx';
@@ -14,15 +14,13 @@ import { RealtimeProvider } from './context/RealtimeContext.tsx';
 
 function MainApp() {
   const { user, loading } = useAuth();
-  const [currentTab, setCurrentTab] = useState<TabId>('overview');
+  const [currentTab, setCurrentTab] = useState<Tab>('overview');
 
   if (loading) {
     return (
-      <div role="status" className="min-h-screen w-full flex flex-col items-center justify-center bg-zinc-950 text-zinc-100 space-y-4">
-        <div className="h-10 w-10 rounded-sm bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300 animate-pulse">
-          <Shield className="h-5 w-5" aria-hidden="true" />
-        </div>
-        <div className="text-xs font-mono text-zinc-500">Initializing NetGuard Security Console...</div>
+      <div className="flex min-h-screen w-full flex-col items-center justify-center gap-3 bg-zinc-950 text-zinc-100">
+        <Shield className="h-6 w-6 text-zinc-400" strokeWidth={1.5} />
+        <div className="text-body text-zinc-500">Loading console</div>
       </div>
     );
   }
@@ -32,7 +30,7 @@ function MainApp() {
   }
 
   // Guard against non-admin manually selecting admin tab
-  const handleSelectTab = (tab: TabId) => {
+  const handleSelectTab = (tab: Tab) => {
     if (tab === 'admin' && user.role !== 'ADMIN') {
       setCurrentTab('overview');
       return;
@@ -41,39 +39,20 @@ function MainApp() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col selection:bg-zinc-800 selection:text-zinc-100">
-      <a href="#main" className="skip-link">Skip to main content</a>
-      <Navbar currentTab={currentTab} onSelectTab={handleSelectTab} />
+    <div className="flex min-h-screen flex-col bg-zinc-950 text-zinc-100 lg:flex-row">
+      <AppSidebar currentTab={currentTab} onSelectTab={handleSelectTab} />
 
-      <main id="main" tabIndex={-1} className="flex-1 max-w-[1400px] w-full mx-auto p-4 sm:p-6 lg:p-8 outline-none">
-        {currentTab === 'overview' && (
-          <SocDashboardView onNavigate={handleSelectTab} />
-        )}
-
-        {currentTab === 'alerts' && (
-          <AlertsView />
-        )}
-
-        {currentTab === 'incidents' && (
-          <IncidentsView />
-        )}
-
-        {currentTab === 'events' && (
-          <SecurityEventsView />
-        )}
-
-        {currentTab === 'admin' && user.role === 'ADMIN' && (
-          <UserAdminView />
-        )}
-
-        {currentTab === 'docs' && (
-          <ApiDocsView />
-        )}
+      <main className="min-w-0 flex-1">
+        {/* key restarts the single entrance animation on every page change */}
+        <div key={currentTab} className="page-enter mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          {currentTab === 'overview' && <SocDashboardView onNavigate={handleSelectTab} />}
+          {currentTab === 'alerts' && <AlertsView />}
+          {currentTab === 'incidents' && <IncidentsView />}
+          {currentTab === 'events' && <SecurityEventsView />}
+          {currentTab === 'admin' && user.role === 'ADMIN' && <UserAdminView />}
+          {currentTab === 'docs' && <ApiDocsView />}
+        </div>
       </main>
-
-      <footer className="border-t border-zinc-800 py-4 text-center text-xs text-zinc-400 font-mono">
-        NetGuard V2.2 &mdash; Realtime SOC Analytics, Alert Triage & Incident Response Console
-      </footer>
     </div>
   );
 }

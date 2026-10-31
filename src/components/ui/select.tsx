@@ -1,9 +1,14 @@
 import React from 'react';
-import { fieldBase } from './field.ts';
 
-export const Select = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<HTMLSelectElement>>(
+export type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement>;
+
+export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   ({ className = '', ...props }, ref) => (
-    <select ref={ref} className={`${fieldBase} h-10 py-1 pointer-coarse:h-11 ${className}`} {...props} />
+    <select
+      ref={ref}
+      className={`h-9 w-full rounded-lg border border-white/10 bg-zinc-800/60 px-3 text-body text-zinc-100 transition-colors hover:border-white/20 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      {...props}
+    />
   )
 );
 Select.displayName = 'Select';
