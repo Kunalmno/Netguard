@@ -50,8 +50,7 @@ Express API
   ├─ Security events
   ├─ Alerts
   ├─ Incidents
-  ├─ Analytics
-  └─ OpenAPI docs
+  └─ Analytics
        │
        v
 Database (PGlite or PostgreSQL)
@@ -125,29 +124,6 @@ NetGuard supports a local embedded database by default, which makes it easy to r
 
 No environment variables are required to run locally. The application automatically uses PGlite and stores its persistent data under `.data/netguard_pg`.
 
-### PostgreSQL configuration
-
-```bash
-export DATABASE_URL="postgresql://user:password@host:5432/netguard"
-# or
-export SQL_HOST="localhost"
-export SQL_PORT="5432"
-export SQL_USER="postgres"
-export SQL_PASSWORD="your_password"
-export SQL_DATABASE="netguard"
-```
-
-### Other environment variables
-
-```bash
-export JWT_SECRET="change-me-in-production"
-export INGEST_API_KEY="your-ingest-key"
-export PORT="3000"
-```
-
-> [!NOTE]
-> The default JWT secret and ingest key are intentionally permissive for local development. Replace them before any production or shared deployment.
-
 ## Authentication and default access
 
 On first startup, NetGuard bootstraps an admin user automatically if none exists:
@@ -213,15 +189,3 @@ The following major routes are included:
 - Ingest authorization supports dedicated API keys for automation.
 - Always rotate secrets and use environment-based configuration in non-local deployments.
 
-## Project status
-
-This repository is structured as a full-stack security operations platform prototype focused on Snort-based alert workflows, analyst operations, and SOC-style monitoring.
-
-For more implementation detail, see:
-
-- `MASTER.md`
-- `docs/`
-
-## License and contribution
-
-Project-specific legal and contribution guidance is handled in their dedicated repository files and is intentionally not duplicated here.
