@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">NetGuard architecture</title>
+  <desc id="desc">Snort telemetry enters the Express API through an authenticated ingestion endpoint. The API coordinates authentication, events, alerts, incidents and analytics, persists data in PGlite or PostgreSQL, and serves the React console with REST and WebSocket updates.</desc>
+  <rect width="1200" height="560" rx="18" fill="#f7f7f5"/>
+  <rect x="1" y="1" width="1198" height="558" rx="17" fill="none" stroke="#deded9"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">
+    <text x="56" y="58" fill="#666660" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" letter-spacing="2">SYSTEM MAP</text>
+    <text x="56" y="104" fill="#171715" font-size="34" font-weight="700">From IDS event to operator workflow</text>
+    <text x="56" y="137" fill="#666660" font-size="19">A simplified view of the documented application boundaries.</text>
+    <!-- telemetry source -->
+    <rect x="56" y="220" width="205" height="132" rx="12" fill="#ffffff" stroke="#bdbdb5" stroke-width="1.6"/>
+    <text x="82" y="262" fill="#777770" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" letter-spacing="1">SOURCE</text>
+    <text x="82" y="303" fill="#171715" font-size="29" font-weight="650">Snort</text>
+    <text x="82" y="330" fill="#666660" font-size="18">IDS telemetry</text>
+    <!-- ingestion arrow -->
+    <path d="M261 286 H324" stroke="#777770" stroke-width="2.2" fill="none"/>
+    <path d="M313 278 L324 286 L313 294" stroke="#777770" stroke-width="2.2" fill="none"/>
+    <text x="272" y="266" fill="#666660" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">INGEST</text>
+    <!-- API -->
+    <rect x="330" y="190" width="420" height="202" rx="12" fill="#ffffff" stroke="#9f9f97" stroke-width="1.8"/>
+    <rect x="330" y="190" width="420" height="48" rx="12" fill="#e9e9e5"/>
+    <path d="M330 226 H750" stroke="#d0d0ca" stroke-width="1"/>
+    <text x="356" y="221" fill="#171715" font-size="23" font-weight="700">Express API</text>
+    <text x="356" y="271" fill="#666660" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15">APPLICATION MODULES</text>
+    <g fill="#f4f4f1" stroke="#d5d5ce">
+      <rect x="356" y="290" width="180" height="36" rx="7"/>
+      <rect x="544" y="290" width="180" height="36" rx="7"/>
+      <rect x="356" y="340" width="116" height="36" rx="7"/>
+      <rect x="484" y="340" width="116" height="36" rx="7"/>
+      <rect x="612" y="340" width="112" height="36" rx="7"/>
+    </g>
+    <g fill="#292926" font-size="20" font-weight="550">
+      <text x="374" y="314">Authentication</text>
+      <text x="562" y="314">Security events</text>
+      <text x="372" y="364">Alerts</text>
+      <text x="500" y="364">Incidents</text>
+      <text x="628" y="364">Analytics</text>
+    </g>
+    <!-- database -->
+    <path d="M750 286 H820" stroke="#777770" stroke-width="2.2" fill="none"/>
+    <path d="M809 278 L820 286 L809 294" stroke="#777770" stroke-width="2.2" fill="none"/>
+    <rect x="826" y="220" width="318" height="132" rx="12" fill="#ffffff" stroke="#bdbdb5" stroke-width="1.6"/>
+    <text x="854" y="262" fill="#777770" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" letter-spacing="1">PERSISTENCE</text>
+    <text x="854" y="303" fill="#171715" font-size="27" font-weight="650">PGlite</text>
+    <text x="854" y="330" fill="#666660" font-size="19">or PostgreSQL</text>
+    <!-- frontend link -->
+    <path d="M540 392 V438 H250 V466" stroke="#777770" stroke-width="2" fill="none"/>
+    <path d="M242 455 L250 466 L258 455" stroke="#777770" stroke-width="2" fill="none"/>
+    <text x="365" y="430" fill="#666660" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18">REST API + WEBSOCKETS</text>
+    <rect x="56" y="474" width="1088" height="58" rx="10" fill="#e9e9e5" stroke="#d1d1ca"/>
+    <text x="82" y="511" fill="#171715" font-size="23" font-weight="650">React 19 + Vite + TypeScript</text>
+    <text x="482" y="510" fill="#55554f" font-size="20">Operator console · overview · alerts · incidents · analytics</text>
+  </g>
+</svg>
