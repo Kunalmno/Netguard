@@ -1,147 +1,104 @@
-# NetGuard
+<p align="center">
+  <img src="./assets/readme/hero.svg" width="100%" alt="NetGuard, a local-first network security console for Snort telemetry, alert triage and incident response" />
+</p>
 
-Network Security Management, Alert Triage & Incident Response Platform.
+<p align="center">
+  <strong>Network Security Management · Alert Triage · Incident Response</strong>
+</p>
 
-NetGuard is a web-based security operations console for Snort telemetry. It ingests IDS events, correlates them into actionable alerts and incidents, and gives operators a focused interface for investigation, triage, and incident response.
+NetGuard is a web-based security operations console for working with **Snort IDS telemetry**. It receives security events, helps operators review and manage alerts, and brings incident ownership, investigation notes, response actions and operational analytics into one interface.
 
 > [!IMPORTANT]
-> This project is designed for a local or lab security operations workflow. It is not a replacement for a full enterprise SIEM stack, but it is a practical platform for understanding alert handling, incident workflows, and telemetry exploration.
+> NetGuard is designed for local and lab security-operations workflows. It is a practical environment for exploring IDS telemetry and incident handling, not a replacement for an enterprise SIEM platform.
 
-## Overview
+## What you can do
 
-NetGuard combines a TypeScript-based Express backend with a React frontend to provide a complete SOC-style workflow:
+- **Ingest IDS telemetry** through an authenticated API or dedicated ingest key.
+- **Explore security events** with filtering and raw-payload inspection.
+- **Triage alerts** and manage their lifecycle.
+- **Coordinate incidents** with grouping, ownership and investigation timelines.
+- **Record response work** through notes, actions and containment records.
+- **Follow activity live** with WebSocket updates and reconnect-safe client synchronization.
+- **Review operations** with dashboard summaries and MTTD-oriented analytics.
 
-- Snort event ingestion via authenticated API or ingest key
-- Security event exploration with filtering and raw payload inspection
-- Alert creation and lifecycle management
-- Incident grouping and ownership tracking
-- Investigation timeline with notes, actions, and containment records
-- Live updates over WebSockets
-- Analytics summaries for MTTD and operational trends
-- Swagger/OpenAPI documentation
+## How it fits together
 
-## Key capabilities
+<p align="center">
+  <img src="./assets/readme/architecture.svg" width="100%" alt="NetGuard system map: Snort sends IDS telemetry to the Express API, which coordinates authentication, events, alerts, incidents and analytics, persists data in PGlite or PostgreSQL, and serves the React operator console over REST and WebSockets" />
+</p>
 
-- Event ingestion API for IDS telemetry
-- Role-based access control for admin, analyst, and viewer users
-- Persistent local database support via PGlite, with PostgreSQL compatibility for production deployment
-- Dashboard views for overview, alerts, incidents, and analytics
-- Real-time event updates and reconnect-safe client synchronization
-- API-first design with schema validation using Zod
+| Layer | Technology | Responsibility |
+| --- | --- | --- |
+| Frontend | React 19, Vite, TypeScript | Operator dashboard and investigation views |
+| API | Express, TypeScript | Authentication and security-workflow coordination |
+| Data | Drizzle ORM, PGlite / PostgreSQL | Persistent application data |
+| Authentication | JWT, bcrypt | Session tokens and password hashing |
+| Live updates | WebSockets | Real-time event and workflow updates |
+| API reference | Swagger UI / OpenAPI | Endpoint documentation |
 
-## Architecture
+## Get started
 
-NetGuard follows a simple layered design:
+### Requirements
 
-- Frontend: React 19 + Vite + TypeScript
-- Backend: Express + TypeScript
-- Data layer: Drizzle ORM + PostgreSQL / PGlite
-- Auth: JWT + bcrypt
-- Real-time: WebSocket gateway
-- Docs: Swagger UI / OpenAPI
-
-```text
-React SPA
-  └─ NetGuard UI
-       │
-       v
-Express API
-  ├─ Authentication
-  ├─ Security events
-  ├─ Alerts
-  ├─ Incidents
-  └─ Analytics
-       │
-       v
-Database (PGlite or PostgreSQL)
-```
-
-## Repository structure
-
-```text
-.
-├── docs/                           # Project documentation and design notes
-├── src/
-│   ├── components/                 # React UI and feature modules
-│   ├── context/                    # App state providers
-│   ├── db/                         # Drizzle schema and initialization
-│   ├── server/                    # API controllers, services, and middleware
-│   ├── types/                     # Shared TypeScript types
-│   ├── App.tsx                    # Application entry and tab routing
-│   ├── index.css                  # Global styles
-│   └── main.tsx                   # React bootstrap
-├── drizzle.config.ts              # Drizzle configuration
-├── index.html                     # Vite HTML entry
-├── metadata.json                  # Project metadata
-├── package.json                   # Scripts and package dependencies
-├── server.ts                      # Express server start-up and routing
-├── tsconfig.json                  # TypeScript configuration
-├── vite.config.ts                 # Vite configuration
-├── bun.lock                       # Bun lockfile
-├── .gitignore                    # Git ignores
-├── MASTER.md                      # Architecture and operations specification
-└── README.md                      # Project overview and setup guide
-```
-
-## Quick start
-
-### Prerequisites
-
-- Node.js 22+
-- npm or bun
+- Node.js 22 or later
+- npm or Bun
 - A modern browser
 
-### Install dependencies
+### Install and run
 
 ```bash
+# Install dependencies
 npm install
 # or
 bun install
-```
 
-### Start the application in development mode
-
-```bash
+# Start the application in development mode
 npm run dev
 # or
 bun run dev
 ```
 
-The app starts the Express server and serves the Vite frontend in development mode.
+The development command starts the Express server and serves the Vite frontend. The API documentation is available at `http://localhost:3000/api/docs` when the application is running on its default local port.
 
-### Production build
+### Build for production
 
 ```bash
 npm run build
 npm run start
 ```
 
-## Configuration
+## Local data and configuration
 
-NetGuard supports a local embedded database by default, which makes it easy to run out of the box. If you want to connect to PostgreSQL instead, set environment variables before starting the app.
+NetGuard uses **PGlite** by default, so a local run does not require a separate PostgreSQL server or environment variables. Persistent local data is stored under:
 
-### Default local setup
+```text
+.data/netguard_pg
+```
 
-No environment variables are required to run locally. The application automatically uses PGlite and stores its persistent data under `.data/netguard_pg`.
+For a PostgreSQL-backed deployment, configure the database connection through environment variables before starting the application. The exact deployment values depend on your environment.
 
-## Authentication and default access
+## First-run administrator
 
-On first startup, NetGuard bootstraps an admin user automatically if none exists:
+On first startup, NetGuard creates an administrator account if one does not already exist:
 
-- Email: `lead_admin@netguard.local`
-- Password: `SecurePassword123!`
+| Field | Local demo value |
+| --- | --- |
+| Email | `lead_admin@netguard.local` |
+| Password | `SecurePassword123!` |
 
-This is intended for local demos and lab environments. Change the password immediately in a real or shared environment.
 
-## Ingesting Snort events
+> [!WARNING]
+> These are documented local-demo credentials. Change the password immediately, rotate any exposed secrets, and do not use the default credentials in a shared or production environment.
 
-The ingest endpoint accepts a single event or a batch of events:
+## Send Snort events
+
+The ingestion endpoint accepts a single event or a batch of events:
 
 ```http
 POST /api/events/ingest
 ```
 
-Example body:
+A single-event request body looks like this:
 
 ```json
 {
@@ -161,31 +118,62 @@ Example body:
 }
 ```
 
-You can authenticate with either:
+Authenticate the request using either:
 
-- a valid admin/analyst JWT in the `Authorization: Bearer ...` header, or
-- the `X-Ingest-Key` header matching `INGEST_API_KEY`
+- `Authorization: Bearer <token>` with a valid admin or analyst JWT, or
+- `X-Ingest-Key: <key>` matching the configured `INGEST_API_KEY`.
 
-## API and documentation
+## API surface
 
-NetGuard exposes the main API surface under `/api` and includes Swagger documentation at:
+The main API routes are grouped under `/api`:
 
-- `http://localhost:3000/api/docs`
+| Route | Purpose |
+| --- | --- |
+| `/api/auth` | Authentication |
+| `/api/users` | User management |
+| `/api/events` | Security event ingestion and exploration |
+| `/api/alerts` | Alert lifecycle management |
+| `/api/incidents` | Incident coordination and investigation |
+| `/api/analytics` | Operational analytics |
+| `/api/docs` | Swagger / OpenAPI documentation |
 
-The following major routes are included:
+## Repository layout
 
-- `/api/auth`
-- `/api/users`
-- `/api/events`
-- `/api/alerts`
-- `/api/incidents`
-- `/api/analytics`
-- `/api/docs`
+```text
+.
+├── assets/
+│   └── readme/              # README SVG artwork
+├── docs/                    # Project documentation and design notes
+├── src/
+│   ├── components/          # React UI and feature modules
+│   ├── context/             # App state providers
+│   ├── db/                   # Drizzle schema and initialization
+│   ├── server/               # API controllers, services and middleware
+│   ├── types/                # Shared TypeScript types
+│   ├── App.tsx               # Application entry and tab routing
+│   ├── index.css             # Global styles
+│   └── main.tsx              # React bootstrap
+├── drizzle.config.ts
+├── index.html
+├── metadata.json
+├── package.json
+├── server.ts                 # Express server startup and routing
+├── tsconfig.json
+├── vite.config.ts
+├── bun.lock
+└── MASTER.md                 # Architecture and operations specification
+```
 
 ## Security notes
 
 - JWT signing uses a configurable secret.
-- Bcrypt is used for password hashing.
-- Ingest authorization supports dedicated API keys for automation.
-- Always rotate secrets and use environment-based configuration in non-local deployments.
+- Passwords are hashed with bcrypt.
+- Automated ingestion can use a dedicated API key.
+- Rotate default credentials and secrets before exposing the application beyond a local lab.
+- Use environment-based configuration for non-local deployments.
 
+---
+
+<p align="center">
+  <sub>Built for practical IDS telemetry exploration and controlled incident workflows.</sub>
+</p>
