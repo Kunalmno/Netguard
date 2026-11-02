@@ -42,6 +42,10 @@ NetGuard combines a TypeScript-based Express backend with a React frontend to pr
 
 ## Architecture
 
+<p align="center">
+<img src="./assets/readme/architecture.svg" width="100%" alt="NetGuard, architecture, how it fits together" />
+
+</p>
 NetGuard follows a simple layered design:
 
 - Frontend: React 19 + Vite + TypeScript
