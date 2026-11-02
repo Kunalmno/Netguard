@@ -1,4 +1,11 @@
 <p align="center">
+  <img src="./assets/readme/logo.svg" width="80%" alt="NetGuard, a local-first network security console for Snort telemetry, alert triage and incident response" />
+</p>
+
+<h1 style="font-weight:bold">Net Guard</h1>
+
+<p align="center"><a  href=#>Deployed Link</a></p>
+<p align="center">
   <img src="./assets/readme/hero.svg" width="100%" alt="NetGuard, a local-first network security console for Snort telemetry, alert triage and incident response" />
 </p>
 
