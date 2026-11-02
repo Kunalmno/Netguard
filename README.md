@@ -1,4 +1,11 @@
 <p align="center">
+  <img src="./assets/readme/logo.svg" width="80%" alt="NetGuard, a local-first network security console for Snort telemetry, alert triage and incident response" />
+</p>
+
+<h1 style="font-weight:bold">Net Guard</h1>
+
+<p align="center"><a  href=#>Deployed Link</a></p>
+<p align="center">
   <img src="./assets/readme/hero.svg" width="100%" alt="NetGuard, a local-first network security console for Snort telemetry, alert triage and incident response" />
 </p>
 
@@ -6,42 +13,93 @@
   <strong>Network Security Management · Alert Triage · Incident Response</strong>
 </p>
 
-NetGuard is a web-based security operations console for working with **Snort IDS telemetry**. It receives security events, helps operators review and manage alerts, and brings incident ownership, investigation notes, response actions and operational analytics into one interface.
+NetGuard is a web-based security operations console for Snort telemetry. It ingests IDS events, correlates them into actionable alerts and incidents, and gives operators a focused interface for investigation, triage, and incident response.
 
 > [!IMPORTANT]
-> NetGuard is designed for local and lab security-operations workflows. It is a practical environment for exploring IDS telemetry and incident handling, not a replacement for an enterprise SIEM platform.
+> This project is designed for a local or lab security operations workflow. It is not a replacement for a full enterprise SIEM stack, but it is a practical platform for understanding alert handling, incident workflows, and telemetry exploration.
 
-## What you can do
+## Overview
 
-- **Ingest IDS telemetry** through an authenticated API or dedicated ingest key.
-- **Explore security events** with filtering and raw-payload inspection.
-- **Triage alerts** and manage their lifecycle.
-- **Coordinate incidents** with grouping, ownership and investigation timelines.
-- **Record response work** through notes, actions and containment records.
-- **Follow activity live** with WebSocket updates and reconnect-safe client synchronization.
-- **Review operations** with dashboard summaries and MTTD-oriented analytics.
+NetGuard combines a TypeScript-based Express backend with a React frontend to provide a complete SOC-style workflow:
 
-## How it fits together
+- Snort event ingestion via authenticated API or ingest key
+- Security event exploration with filtering and raw payload inspection
+- Alert creation and lifecycle management
+- Incident grouping and ownership tracking
+- Investigation timeline with notes, actions, and containment records
+- Live updates over WebSockets
+- Analytics summaries for MTTD and operational trends
+- Swagger/OpenAPI documentation
 
-<p align="center">
-  <img src="./assets/readme/architecture.svg" width="100%" alt="NetGuard system map: Snort sends IDS telemetry to the Express API, which coordinates authentication, events, alerts, incidents and analytics, persists data in PGlite or PostgreSQL, and serves the React operator console over REST and WebSockets" />
-</p>
+## Key capabilities
 
-| Layer | Technology | Responsibility |
-| --- | --- | --- |
-| Frontend | React 19, Vite, TypeScript | Operator dashboard and investigation views |
-| API | Express, TypeScript | Authentication and security-workflow coordination |
-| Data | Drizzle ORM, PGlite / PostgreSQL | Persistent application data |
-| Authentication | JWT, bcrypt | Session tokens and password hashing |
-| Live updates | WebSockets | Real-time event and workflow updates |
-| API reference | Swagger UI / OpenAPI | Endpoint documentation |
+- Event ingestion API for IDS telemetry
+- Role-based access control for admin, analyst, and viewer users
+- Persistent local database support via PGlite, with PostgreSQL compatibility for production deployment
+- Dashboard views for overview, alerts, incidents, and analytics
+- Real-time event updates and reconnect-safe client synchronization
+- API-first design with schema validation using Zod
 
-## Get started
+## Architecture
 
-### Requirements
+NetGuard follows a simple layered design:
 
-- Node.js 22 or later
-- npm or Bun
+- Frontend: React 19 + Vite + TypeScript
+- Backend: Express + TypeScript
+- Data layer: Drizzle ORM + PostgreSQL / PGlite
+- Auth: JWT + bcrypt
+- Real-time: WebSocket gateway
+- Docs: Swagger UI / OpenAPI
+
+```text
+React SPA
+  └─ NetGuard UI
+       │
+       v
+Express API
+  ├─ Authentication
+  ├─ Security events
+  ├─ Alerts
+  ├─ Incidents
+  └─ Analytics
+       │
+       v
+Database (PGlite or PostgreSQL)
+```
+
+## Repository structure
+
+```text
+.
+├── docs/                           # Project documentation and design notes
+├── src/
+│   ├── components/                 # React UI and feature modules
+│   ├── context/                    # App state providers
+│   ├── db/                         # Drizzle schema and initialization
+│   ├── server/                    # API controllers, services, and middleware
+│   ├── types/                     # Shared TypeScript types
+│   ├── App.tsx                    # Application entry and tab routing
+│   ├── index.css                  # Global styles
+│   └── main.tsx                   # React bootstrap
+├── drizzle.config.ts              # Drizzle configuration
+├── index.html                     # Vite HTML entry
+├── metadata.json                  # Project metadata
+├── package.json                   # Scripts and package dependencies
+├── server.ts                      # Express server start-up and routing
+├── tsconfig.json                  # TypeScript configuration
+├── vite.config.ts                 # Vite configuration
+├── bun.lock                       # Bun lockfile
+├── .gitignore                    # Git ignores
+├── MASTER.md                      # Architecture and operations specification
+└── README.md                      # Project overview and setup guide
+```
+
+## Quick start
+
+### Prerequisites
+
+- Node.js 22+
+- npm or bun
 - A modern browser
 
 ### Install and run

@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import path from 'node:path';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
+import rateLimit from 'express-rate-limit';
 import { initializeDatabase } from './src/db/index.ts';
 import { authRouter } from './src/server/auth/auth.controller.ts';
 import { usersRouter } from './src/server/users/users.controller.ts';
@@ -23,6 +24,9 @@ export async function createServer() {
   const isProduction = process.env.NODE_ENV === 'production';
   const port = Number(process.env.PORT || 3000);
 
+  // Trust proxy if sitting behind Render/Railway load balancers so rate-limiting tracks correct IPs
+  app.set('trust proxy', 1);
+
   // Initialize DB schemas & tables
   try {
     await initializeDatabase();
@@ -31,8 +35,29 @@ export async function createServer() {
     console.error('[NetGuard Backend] Database initialization error:', err);
   }
 
-  // Middleware
-  app.use(express.json());
+  // Middleware with size limit protection
+  app.use(express.json({ limit: '10kb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+  // General API Rate Limiter (100 requests per 15 minutes per IP)
+  const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests from this IP, please try again later.' },
+  });
+  app.use('/api/', apiLimiter);
+
+  // Strict Auth Rate Limiter (10 attempts per 15 minutes per IP to prevent brute forcing)
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many login attempts, please try again later.' },
+  });
+  app.use('/api/auth', authLimiter);
 
   // API Health Check
   app.get('/api/health', (_req, res) => {
